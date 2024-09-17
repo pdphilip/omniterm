@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace OmniTerm;
 
 use Closure;
+use OmniTerm\Async\Connection;
+use OmniTerm\Async\Task;
 use Symfony\Component\Console\Output\OutputInterface;
-use Termwind\Async\Connection;
-use Termwind\Async\Task;
 
 final class AsyncHtmlRenderer
 {

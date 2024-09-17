@@ -1,5 +1,5 @@
 <?php
 
-use PDPhilip\OmniTerm\Tests\TestCase;
+use OmniTerm\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);

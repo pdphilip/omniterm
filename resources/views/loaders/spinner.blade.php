@@ -1,14 +1,14 @@
 <?php
 
-use function OmniTerm\partials\loadSpinner;
+use OmniTerm\partials\Ascii;
 
 if (empty($type)) {
-    $type = 'dots1'
+    $type = 'dots';
 }
 if (empty($colors)) {
     $colors = ["text-amber-500", "text-emerald-500", "text-rose-500", "text-sky-500"];
 }
-$characters = loadSpinner($type);
+$characters = Ascii::loadSpinner($type);
 
 $intervals = count($characters) - 1;
 $colorIntervals = count($colors) - 1;
@@ -40,7 +40,6 @@ switch ($state) {
         $textColor = "text-rose-500";
         $show = "✘";
         break;
-
 }
 ?>
 <div class="m-1 flex">

@@ -36,7 +36,10 @@
     "autoload": {
         "psr-4": {
             "OmniTerm\\": "src/"
-        }
+        },
+        "files": [
+            "src/Functions.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -80,10 +83,7 @@
         "laravel": {
             "providers": [
                 "OmniTerm\\OmniTermServiceProvider"
-            ],
-            "aliases": {
-                "OmniTerm": "OmniTerm\\Facades\\OmniTerm"
-            }
+            ]
         }
     },
     "minimum-stability": "dev",
