@@ -3,13 +3,12 @@
 use OmniTerm\partials\Ascii;
 
 if (empty($type)) {
-    $type = 'dots';
+    $type = 'sand';
 }
 if (empty($colors)) {
-    $colors = ["text-amber-500", "text-emerald-500", "text-rose-500", "text-sky-500"];
+    $colors = ["text-amber-500"];
 }
 $characters = Ascii::loadSpinner($type);
-
 $intervals = count($characters) - 1;
 $colorIntervals = count($colors) - 1;
 $j = 0;
@@ -22,6 +21,7 @@ while ($i > $intervals) {
 }
 
 $show = $characters[$i];
+$show = str_replace(' ', '&nbsp;', $show);
 $textColor = $colors[$j];
 switch ($state) {
     case 'success':
@@ -43,9 +43,7 @@ switch ($state) {
 }
 ?>
 <div class="m-1 flex">
-    <span class="{{$textColor}} mx-1">
-        {{ $show }}
-    </span>
+    <span class="{{$textColor}} mx-1">{!! $show !!}</span>
     <span class="mx-1">{{$message}}</span>
     @if(!empty($details))
         <span class="mx-1 text-slate-600">{{$details}}</span>

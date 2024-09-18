@@ -3,7 +3,7 @@ $length = $screenWidth - (30);
 $progress = floor($current / $max * $length);
 $remaining = $length - $progress;
 $percentage = round(($current / $max) * 100);
-$colors = ['rose', 'red', 'orange', 'amber', 'yellow', 'lime', 'cyan', 'teal', 'emerald', 'green', 'green'];
+$colors = ['rose', 'red', 'orange', 'amber', 'yellow', 'cyan', 'cyan', 'teal', 'teal', 'teal', 'teal'];
 $i = (int) floor(($current / $max) * 10);
 $selectedColor = $colors[$i];
 

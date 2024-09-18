@@ -1,9 +1,9 @@
 <?php
 if (empty($frameColor)) {
-    $frameColor = 'gray';
+    $frameColor = '';
 }
 if (empty($titleColor)) {
-    $titleColor = 'gray';
+    $titleColor = '';
 }
 ?>
 <div class="mx-1 {{$frameColor}}">
@@ -12,19 +12,19 @@ if (empty($titleColor)) {
         <span class="flex-1 content-repeat-[─]"></span>
         <span>╮</span>
     </div>
-    <div>
+    <div class="flex">
         <span>│</span>
-        <span class="flex-1"></span>
+        <span class="flex-1">&nbsp;</span>
         <span>│</span>
     </div>
-    <div>
+    <div class="flex">
         <span>│</span>
         <span class="flex-1 text-center {{$titleColor}}">{{$title}}</span>
         <span>│</span>
     </div>
-    <div>
+    <div class="flex">
         <span>│</span>
-        <span class="flex-1"></span>
+        <span class="flex-1">&nbsp;</span>
         <span>│</span>
     </div>
     <div class="flex">

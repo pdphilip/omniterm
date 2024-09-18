@@ -64,7 +64,7 @@ final class AsyncHtmlRenderer
         return $this;
     }
 
-    public function run(callable $render, int $us = 1000): mixed
+    public function run(callable $render, int $us = 10000): mixed
     {
         if ($this->requiresSync) {
             return $this->executeSync($render);
@@ -107,7 +107,7 @@ final class AsyncHtmlRenderer
     // Async Fork methods
     //----------------------------------------------------------------------
 
-    private function executeAsync(callable $render, int $us = 1000): mixed
+    private function executeAsync(callable $render, int $us = 10000): mixed
     {
         $this->isRunning = true;
 

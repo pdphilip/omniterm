@@ -3,7 +3,28 @@ $length = $screenWidth - (30);
 $progress = floor($current / $max * $length);
 $remaining = $length - $progress;
 $percentage = round(($current / $max) * 100);
-$progressColor = "bg-sky-600 text-sky-400";
+$progressColor = "bg-red-600 text-red-400";
+if ($progress > 5) {
+    $progressColor = "bg-orange-600 text-orange-400";
+}
+if ($progress > 10) {
+    $progressColor = "bg-amber-600 text-amber-400";
+}
+if ($progress > 15) {
+    $progressColor = "bg-yellow-600 text-yellow-400";
+}
+if ($progress > 20) {
+    $progressColor = "bg-lime-600 text-lime-400";
+}
+if ($progress > 25) {
+    $progressColor = "bg-teal-600 text-teal-400";
+}
+if ($progress > 30) {
+    $progressColor = "bg-cyan-600 text-cyan-400";
+}
+if ($progress > 35) {
+    $progressColor = "bg-sky-600 text-sky-400";
+}
 if ($max == $current) {
     $progressColor = "bg-emerald-600 text-emerald-300";
 }
