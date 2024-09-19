@@ -39,7 +39,7 @@ class AsciiHelper
         $valuesWidth = (strlen($maxValueAsString) * 2) + 6;
 
         return [
-            'length' => $screenWidth - ($valuesWidth * 2),
+            'length' => $screenWidth - ($valuesWidth * 2) - 10,
             'valuesWidth' => $valuesWidth,
         ];
     }
