@@ -1,35 +1,44 @@
 <?php
-if (empty($frameColor)) {
-    $frameColor = '';
+
+use OmniTerm\Helpers\Partials\AsciiHelper;
+
+if (empty($borderColor)) {
+    $borderColor = '';
 }
-if (empty($titleColor)) {
-    $titleColor = '';
+if (empty($textColor)) {
+    $textColor = '';
 }
+
+$frame = AsciiHelper::roundedBox();
+if (! empty($type) && $type == 'square') {
+    $frame = AsciiHelper::squareBox();
+}
+
 ?>
-<div class="mx-1 {{$frameColor}}">
+<div class="mx-1 {{$borderColor}}">
     <div class="flex">
-        <span>╭</span>
-        <span class="flex-1 content-repeat-[─]"></span>
-        <span>╮</span>
+        <span>{{ $frame['tl'] }}</span>
+        <span class="flex-1 content-repeat-[{{ $frame['t'] }}]"></span>
+        <span>{{ $frame['tr'] }}</span>
     </div>
     <div class="flex">
-        <span>│</span>
+        <span>{{ $frame['l'] }}</span>
         <span class="flex-1">&nbsp;</span>
-        <span>│</span>
+        <span>{{ $frame['r'] }}</span>
     </div>
     <div class="flex">
-        <span>│</span>
-        <span class="flex-1 text-center {{$titleColor}}">{{$title}}</span>
-        <span>│</span>
+        <span>{{ $frame['l'] }}</span>
+        <span class="flex-1 text-center {{$textColor}}">{{$title}}</span>
+        <span>{{ $frame['r'] }}</span>
     </div>
     <div class="flex">
-        <span>│</span>
+        <span>{{ $frame['l'] }}</span>
         <span class="flex-1">&nbsp;</span>
-        <span>│</span>
+        <span>{{ $frame['r'] }}</span>
     </div>
     <div class="flex">
-        <span>╰</span>
-        <span class="flex-1 content-repeat-[─]"></span>
-        <span>╯</span>
+        <span>{{ $frame['bl'] }}</span>
+        <span class="flex-1 content-repeat-[{{ $frame['b'] }}]"></span>
+        <span>{{ $frame['br'] }}</span>
     </div>
 </div>

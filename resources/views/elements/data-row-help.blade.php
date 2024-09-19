@@ -1,11 +1,14 @@
 <?php
+if (empty($class)) {
+    $class = 'text-gray';
+}
+if (str_contains($class, 'bg-')) {
+    //remove any existing text-XXX-xxx classes
+    $class = preg_replace('/text-[a-z]+-[0-9]+/', '', $class);
+    //replace bg- with text-
+    $class = str_replace('bg-', 'text-', $class);
+}
 
-$class = match ($status) {
-    'disabled' => 'text-stone-600',
-    'warning' => 'text-amber-500',
-    'error' => 'text-rose-500',
-    default => 'text-gray',
-};
 ?>
 <div>
     <div class="flex space-x-1 px-1">

@@ -1,30 +1,42 @@
 <?php
-switch ($status) {
-    case 'disabled':
-        $class = 'bg-zinc-500 text-zinc-100';
-        $color = 'text-zinc-500';
-        break;
-    case 'warning':
-        $class = 'bg-amber-500 text-amber-200';
-        $color = 'text-amber-500';
-        break;
-    case 'error':
-        $class = 'bg-rose-500 text-rose-200';
-        $color = 'text-rose-500';
-        break;
-    case 'info':
-        $class = 'bg-sky-500 text-sky-200';
-        $color = 'text-sky-500';
-        break;
-    case 'enabled':
-        $class = 'bg-emerald-500 text-emerald-100';
-        $color = 'text-emerald-500';
-        break;
-    default:
-        $class = 'bg-emerald-500  text-emerald-100';
-        $color = 'text-emerald-500';
+$disabledColor = 'zinc';
+$warningColor = 'amber';
+$errorColor = 'rose';
+$infoColor = 'sky';
+$successColor = 'emerald';
 
+if (! empty($statusColors['disabled'])) {
+    $disabledColor = $statusColors['disabled'];
 }
+if (! empty($statusColors['warning'])) {
+    $warningColor = $statusColors['warning'];
+}
+if (! empty($statusColors['error'])) {
+    $errorColor = $statusColors['error'];
+}
+if (! empty($statusColors['info'])) {
+    $infoColor = $statusColors['info'];
+}
+if (! empty($successColors['success'])) {
+    $successColor = $statusColors['success'];
+}
+
+$class = match ($status) {
+    'disabled' => 'bg-'.$disabledColor.'-500 text-'.$disabledColor.'-100',
+    'warning' => 'bg-'.$warningColor.'-500 text-'.$warningColor.'-200',
+    'error' => 'bg-'.$errorColor.'-500 text-'.$errorColor.'-200',
+    'info' => 'bg-'.$infoColor.'-500 text-'.$infoColor.'-200',
+    default => 'bg-'.$successColor.'-500 text-'.$successColor.'-100',
+};
+
+$color = match ($status) {
+    'disabled' => 'text-'.$disabledColor.'-500',
+    'warning' => 'text-'.$warningColor.'-500',
+    'error' => 'text-'.$errorColor.'-500',
+    'info' => 'text-'.$infoColor.'-500',
+    default => 'text-'.$successColor.'-500',
+};
+
 $extraText = null;
 if (! empty($extra)) {
     $extraText = $extra;
@@ -34,11 +46,11 @@ if (! empty($extra)) {
 <div>
     @include('omniterm::elements.hr',['color' => $color])
     <div class="flex space-x-1 mx-1">
-        <span class="{{$class}} px-1 ml-1">{{$name}}</span>
-        <span class="flex-1">{!! $title !!}</span>
+        <span class="{{$class}} px-1 ml-1">{{$title}}</span>
+        <span class="flex-1">{!! $details !!}</span>
         @if(!empty($help))
             @foreach ($help as $helperRow)
-                @include('omniterm::status.custom-help',['value' => $helperRow])
+                @include('omniterm::status.custom-help',['value' => $helperRow,'class' => $color])
             @endforeach
         @endif
     </div>

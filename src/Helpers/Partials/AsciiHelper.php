@@ -1,9 +1,59 @@
 <?php
 
-namespace OmniTerm\partials;
+namespace OmniTerm\Helpers\Partials;
 
-class Ascii
+class AsciiHelper
 {
+    public static function roundedBox()
+    {
+        return [
+            'tl' => '╭',
+            't' => '─',
+            'tr' => '╮',
+            'r' => '│',
+            'br' => '╯',
+            'b' => '─',
+            'bl' => '╰',
+            'l' => '│',
+        ];
+    }
+
+    public static function squareBox()
+    {
+        return [
+            'tl' => '┌',
+            't' => '─',
+            'tr' => '┐',
+            'r' => '│',
+            'br' => '┘',
+            'b' => '─',
+            'bl' => '└',
+            'l' => '│',
+        ];
+    }
+
+    public static function progressBarDimensions($screenWidth, $maxValue)
+    {
+        $maxValue = number_format($maxValue);
+        $maxValueAsString = (string) $maxValue;
+        $valuesWidth = (strlen($maxValueAsString) * 2) + 6;
+
+        return [
+            'length' => $screenWidth - ($valuesWidth * 2),
+            'valuesWidth' => $valuesWidth,
+        ];
+    }
+
+    public static function getSpinnerTypes()
+    {
+        return array_keys(self::$spinners);
+    }
+
+    public static function loadSpinner($key): array
+    {
+        return self::$spinners[$key]['frames'];
+    }
+
     public static array $spinners = [
         'dots' => [
             'frames' => ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
@@ -212,14 +262,4 @@ class Ascii
         ],
 
     ];
-
-    public static function getSpinnerTypes()
-    {
-        return array_keys(self::$spinners);
-    }
-
-    public static function loadSpinner($key): array
-    {
-        return self::$spinners[$key]['frames'];
-    }
 }

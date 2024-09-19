@@ -1,6 +1,6 @@
 <?php
 
-use OmniTerm\partials\Ascii;
+use OmniTerm\Helpers\Partials\AsciiHelper;
 
 if (empty($type)) {
     $type = 'sand';
@@ -8,7 +8,7 @@ if (empty($type)) {
 if (empty($colors)) {
     $colors = ["text-amber-500"];
 }
-$characters = Ascii::loadSpinner($type);
+$characters = AsciiHelper::loadSpinner($type);
 $intervals = count($characters) - 1;
 $colorIntervals = count($colors) - 1;
 $j = 0;
