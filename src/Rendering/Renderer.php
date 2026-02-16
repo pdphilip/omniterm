@@ -238,7 +238,14 @@ class Renderer
             $parts[] = $this->styledSpaces($pr, $containerBg);
         }
 
-        return implode('', $parts);
+        $line = implode('', $parts);
+
+        $containerGradient = $containerStyles['gradient'] ?? null;
+        if ($containerGradient && $containerGradient['from']) {
+            $line = $this->applyGradient($line, $rowWidth, $containerGradient);
+        }
+
+        return $line;
     }
 
     protected function measureFlexChild(DOMNode $node, array $inherited): array
@@ -417,11 +424,18 @@ class Renderer
         }
 
         // Assemble with ANSI codes
-        $prefix = $this->buildAnsiPrefix($textColor, $bgColor, $bold);
-        $suffix = $prefix !== '' ? "\e[0m" : '';
-
+        $gradient = $styles['gradient'] ?? null;
         $inner = str_repeat(' ', $padL).$content.str_repeat(' ', $padR);
-        $styled = $prefix.$inner.$suffix;
+
+        if ($gradient && $gradient['from']) {
+            $prefix = $this->buildAnsiPrefix($textColor, null, $bold);
+            $suffix = $prefix !== '' ? "\e[0m" : '';
+            $styled = $this->applyGradient($prefix.$inner.$suffix, $elementWidth, $gradient);
+        } else {
+            $prefix = $this->buildAnsiPrefix($textColor, $bgColor, $bold);
+            $suffix = $prefix !== '' ? "\e[0m" : '';
+            $styled = $prefix.$inner.$suffix;
+        }
 
         $result = '';
         if ($ml) {
@@ -484,7 +498,7 @@ class Renderer
         $result = [
             'flex' => false, 'flex1' => false, 'bold' => false,
             'textCenter' => false, 'textRight' => false,
-            'textColor' => null, 'bgColor' => null,
+            'textColor' => null, 'bgColor' => null, 'gradient' => null,
             'w' => null, 'px' => 0, 'pl' => 0, 'pr' => 0,
             'mx' => 0, 'ml' => 0, 'mr' => 0,
             'mb' => 0, 'mt' => 0, 'm' => 0,
@@ -589,6 +603,54 @@ class Renderer
                 continue;
             }
 
+            // Arbitrary RGB — bg-[R,G,B] / text-[R,G,B]
+            if (preg_match('/^bg-\[(\d+),(\d+),(\d+)\]$/', $class, $m)) {
+                $result['bgColor'] = [(int) $m[1], (int) $m[2], (int) $m[3]];
+
+                continue;
+            }
+            if (preg_match('/^text-\[(\d+),(\d+),(\d+)\]$/', $class, $m)) {
+                $result['textColor'] = [(int) $m[1], (int) $m[2], (int) $m[3]];
+
+                continue;
+            }
+
+            // Gradients (check before bg-*)
+            if ($class === 'bg-gradient-to-r' || $class === 'bg-gradient-to-l') {
+                $dir = $class === 'bg-gradient-to-r' ? 'r' : 'l';
+                $result['gradient'] ??= ['dir' => 'r', 'from' => null, 'to' => null, 'via' => null];
+                $result['gradient']['dir'] = $dir;
+
+                continue;
+            }
+            if (str_starts_with($class, 'from-')) {
+                $rgb = $this->resolveColor(substr($class, 5));
+                if ($rgb) {
+                    $result['gradient'] ??= ['dir' => 'r', 'from' => null, 'to' => null, 'via' => null];
+                    $result['gradient']['from'] = $rgb;
+                }
+
+                continue;
+            }
+            if (str_starts_with($class, 'via-')) {
+                $rgb = $this->resolveColor(substr($class, 4));
+                if ($rgb) {
+                    $result['gradient'] ??= ['dir' => 'r', 'from' => null, 'to' => null, 'via' => null];
+                    $result['gradient']['via'] = $rgb;
+                }
+
+                continue;
+            }
+            if (str_starts_with($class, 'to-')) {
+                $rgb = $this->resolveColor(substr($class, 3));
+                if ($rgb) {
+                    $result['gradient'] ??= ['dir' => 'r', 'from' => null, 'to' => null, 'via' => null];
+                    $result['gradient']['to'] = $rgb;
+                }
+
+                continue;
+            }
+
             // Colors
             if (str_starts_with($class, 'text-')) {
                 $result['textColor'] = $this->resolveColor(substr($class, 5));
@@ -652,6 +714,74 @@ class Renderer
         }
 
         return $text;
+    }
+
+    // ---------------------------------------------------------------
+    // Gradient
+    // ---------------------------------------------------------------
+
+    protected function applyGradient(string $content, int $totalWidth, array $gradient): string
+    {
+        $from = $gradient['from'] ?? [0, 0, 0];
+        $to = $gradient['to'] ?? $from;
+        $via = $gradient['via'] ?? null;
+        $dir = $gradient['dir'] ?? 'r';
+
+        $segments = preg_split('/(\e\[[0-9;]*m)/', $content, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+
+        $result = '';
+        $visPos = 0;
+
+        foreach ($segments as $segment) {
+            if (str_starts_with($segment, "\e[")) {
+                $result .= $segment;
+            } else {
+                $chars = mb_str_split($segment);
+                foreach ($chars as $char) {
+                    $t = $totalWidth > 1 ? $visPos / ($totalWidth - 1) : 0.0;
+                    if ($dir === 'l') {
+                        $t = 1.0 - $t;
+                    }
+                    $rgb = $this->lerpColor($from, $to, $via, $t);
+                    $result .= Colors::bgFromRgb($rgb).$char;
+                    $visPos++;
+                }
+            }
+        }
+
+        $result .= "\e[0m";
+
+        return $result;
+    }
+
+    protected function lerpColor(array $from, array $to, ?array $via, float $t): array
+    {
+        $t = max(0.0, min(1.0, $t));
+
+        if ($via !== null) {
+            if ($t <= 0.5) {
+                $t2 = $t * 2;
+
+                return [
+                    (int) round($from[0] + ($via[0] - $from[0]) * $t2),
+                    (int) round($from[1] + ($via[1] - $from[1]) * $t2),
+                    (int) round($from[2] + ($via[2] - $from[2]) * $t2),
+                ];
+            }
+            $t2 = ($t - 0.5) * 2;
+
+            return [
+                (int) round($via[0] + ($to[0] - $via[0]) * $t2),
+                (int) round($via[1] + ($to[1] - $via[1]) * $t2),
+                (int) round($via[2] + ($to[2] - $via[2]) * $t2),
+            ];
+        }
+
+        return [
+            (int) round($from[0] + ($to[0] - $from[0]) * $t),
+            (int) round($from[1] + ($to[1] - $from[1]) * $t),
+            (int) round($from[2] + ($to[2] - $from[2]) * $t),
+        ];
     }
 
     // ---------------------------------------------------------------

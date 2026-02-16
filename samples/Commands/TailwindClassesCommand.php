@@ -93,6 +93,23 @@ class TailwindClassesCommand extends Command
         render('<div class="flex"><span class="flex-1 text-emerald-600 content-repeat-[═]">═</span></div>');
         render('<div class="flex"><span class="flex-1 text-rose-600 content-repeat-[·]">·</span></div>');
 
+        $this->section('bg-gradient-to-r — Left-to-Right Gradient');
+        render('<div class="flex"><span class="flex-1 bg-gradient-to-r from-red-500 to-amber-300 text-white font-bold text-center px-2">from-red-500 to-amber-300</span></div>');
+        render('<div class="flex"><span class="flex-1 bg-gradient-to-r from-sky-600 to-emerald-400 text-white font-bold text-center px-2">from-sky-600 to-emerald-400</span></div>');
+
+        $this->section('bg-gradient-to-l — Right-to-Left Gradient');
+        render('<div class="flex"><span class="flex-1 bg-gradient-to-l from-violet-600 to-rose-400 text-white font-bold text-center px-2">from-violet-600 to-rose-400</span></div>');
+
+        $this->section('via-{color} — Three-Stop Gradient');
+        render('<div class="flex"><span class="flex-1 bg-gradient-to-r from-rose-500 via-amber-400 to-emerald-500 text-white font-bold text-center px-2">from-rose-500 via-amber-400 to-emerald-500</span></div>');
+        render('<div class="flex"><span class="flex-1 bg-gradient-to-r from-indigo-800 via-purple-500 to-pink-400 text-white font-bold text-center px-2">from-indigo-800 via-purple-500 to-pink-400</span></div>');
+
+        $this->section('Container Gradient — On Flex Row');
+        render('<div class="flex bg-gradient-to-r from-slate-900 to-slate-700"><span class="w-20 text-sky-400 font-bold px-2">Server</span><span class="flex-1 text-emerald-300">Online — 128 days uptime</span></div>');
+
+        $this->section('bg-[R,G,B] / text-[R,G,B] — Arbitrary RGB Colors');
+        render('<div class="flex"><span class="bg-[255,100,50] text-[255,255,255] px-2">bg-[255,100,50]</span><span> </span><span class="text-[0,200,150]">text-[0,200,150]</span><span> </span><span class="bg-[40,40,80] text-[200,180,255] px-2">Custom purple</span></div>');
+
         $this->section('Combined — Practical Examples');
 
         // Status row

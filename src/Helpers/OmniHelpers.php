@@ -326,6 +326,12 @@ class OmniHelpers
 
     }
 
+    public function createGradientProgressBar($total)
+    {
+        $this->progressInstance = new ProgressBar('gradient');
+        $this->progressInstance->setTotal($total);
+    }
+
     public function createSimpleProgressBar($total, $withColors = true)
     {
         if ($withColors) {

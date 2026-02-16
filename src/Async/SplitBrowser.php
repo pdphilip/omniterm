@@ -100,7 +100,7 @@ class SplitBrowser extends Prompt
         int $scroll = 12,
         string $hint = '',
     ): mixed {
-        return (new static($label, $items, $detail, $scroll, $hint))->prompt();
+        return (new self($label, $items, $detail, $scroll, $hint))->prompt();
     }
 
     protected function renderTheme(): string

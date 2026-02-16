@@ -30,17 +30,22 @@ class Colors
         $term = (string) getenv('TERM');
         $termProgram = (string) getenv('TERM_PROGRAM');
 
-        // Most modern terminals support truecolor even without COLORTERM
-        if (in_array($termProgram, ['iTerm.app', 'WezTerm', 'Hyper', 'vscode'], true)) {
-            return static::$colorMode = self::MODE_TRUECOLOR;
-        }
-
-        // xterm-256color and similar support at least 256
-        if (str_contains($term, '256color') || str_contains($term, 'kitty')) {
+        // Known non-truecolor terminal
+        if ($termProgram === 'Apple_Terminal') {
             return static::$colorMode = self::MODE_256;
         }
 
-        // Safe default — 256 works almost everywhere
+        // Nearly all modern terminals with 256color support also handle truecolor
+        if (str_contains($term, '256color') || str_contains($term, 'kitty')) {
+            return static::$colorMode = self::MODE_TRUECOLOR;
+        }
+
+        // Known truecolor terminals by program name
+        if ($termProgram !== '') {
+            return static::$colorMode = self::MODE_TRUECOLOR;
+        }
+
+        // Safe default — 256 works everywhere
         return static::$colorMode = self::MODE_256;
     }
 
@@ -97,6 +102,24 @@ class Colors
         }
 
         return static::bgFromRgb($rgb);
+    }
+
+    /**
+     * Interpolate between two colors at a given percentage (0–100).
+     *
+     * Returns [r, g, b] array.
+     */
+    public static function colorAt(float $percent, string $fromColor, int $fromShade, string $toColor, int $toShade): array
+    {
+        $from = static::rgb($fromColor, $fromShade) ?? [0, 0, 0];
+        $to = static::rgb($toColor, $toShade) ?? [0, 0, 0];
+        $t = max(0.0, min(1.0, $percent / 100));
+
+        return [
+            (int) round($from[0] + ($to[0] - $from[0]) * $t),
+            (int) round($from[1] + ($to[1] - $from[1]) * $t),
+            (int) round($from[2] + ($to[2] - $from[2]) * $t),
+        ];
     }
 
     /**

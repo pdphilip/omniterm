@@ -88,8 +88,23 @@ class ProgressBarsCommand extends Command
         $this->omni->progressFinish();
         $this->newLine();
 
+        // Gradient progress bar
+        $this->omni->info('5. Gradient Progress Bar (smooth amber → emerald)');
+        $this->newLine();
+
+        $this->omni->createGradientProgressBar(60);
+        $this->omni->showProgress();
+
+        for ($i = 0; $i < 60; $i++) {
+            usleep(30000);
+            $this->omni->progressAdvance();
+        }
+
+        $this->omni->progressFinish();
+        $this->newLine();
+
         // Variable increment example
-        $this->omni->info('5. Variable Increment (advance by different amounts)');
+        $this->omni->info('6. Variable Increment (advance by different amounts)');
         $this->newLine();
 
         $this->omni->createProgressBar(100, withColors: true);
