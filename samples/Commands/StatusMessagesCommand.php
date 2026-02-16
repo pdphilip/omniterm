@@ -24,7 +24,7 @@ class StatusMessagesCommand extends Command
     {
         $this->initOmni();
 
-        $this->omni->info('Status Messages Demo');
+        $this->omni->titleBar('Status Messages', 'sky');
         $this->newLine();
 
         // Simple status messages

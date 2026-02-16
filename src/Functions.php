@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace OmniTerm;
 
 use Closure;
+use OmniTerm\Rendering\Renderer;
+use OmniTerm\Rendering\Terminal;
+use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
-use Termwind\HtmlRenderer;
-use Termwind\Question;
-use Termwind\Repositories\Styles as StyleRepository;
-use Termwind\Terminal;
-use Termwind\Termwind;
-use Termwind\ValueObjects\Style;
-use Termwind\ValueObjects\Styles;
+use Symfony\Component\Console\Question\Question;
 
 if (! function_exists('OmniTerm\renderUsing')) {
     /**
@@ -20,19 +19,17 @@ if (! function_exists('OmniTerm\renderUsing')) {
      */
     function renderUsing(?OutputInterface $renderer): void
     {
-        Termwind::renderUsing($renderer);
+        Renderer::renderUsing($renderer);
     }
 }
 
 if (! function_exists('OmniTerm\style')) {
     /**
-     * Creates a new style.
-     *
-     * @param  (Closure(Styles $renderable, string|int ...$arguments): Styles)|null  $callback
+     * Creates a new style (no-op — custom styles not supported in OmniTerm renderer).
      */
-    function style(string $name, ?Closure $callback = null): Style
+    function style(string $name, ?Closure $callback = null): void
     {
-        return StyleRepository::create($name, $callback);
+        // Custom styles not supported in OmniTerm's own renderer
     }
 }
 
@@ -42,7 +39,7 @@ if (! function_exists('OmniTerm\render')) {
      */
     function render(string $html, int $options = OutputInterface::OUTPUT_NORMAL): void
     {
-        (new HtmlRenderer)->render($html, $options);
+        (new Renderer)->render($html, $options);
     }
 }
 
@@ -72,7 +69,7 @@ if (! function_exists('OmniTerm\parse')) {
      */
     function parse(string $html): string
     {
-        return (new HtmlRenderer)->parse($html)->toString();
+        return (new Renderer)->parse($html)->toString();
     }
 }
 
@@ -94,6 +91,14 @@ if (! function_exists('OmniTerm\ask')) {
      */
     function ask(string $question, ?iterable $autocomplete = null): mixed
     {
-        return (new Question)->ask($question, $autocomplete);
+        (new Renderer)->render($question);
+
+        $helper = new QuestionHelper;
+        $q = new Question('');
+        if ($autocomplete !== null) {
+            $q->setAutocompleterValues($autocomplete);
+        }
+
+        return $helper->ask(new ArrayInput([]), new ConsoleOutput, $q);
     }
 }

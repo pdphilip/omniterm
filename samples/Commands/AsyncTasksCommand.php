@@ -24,7 +24,7 @@ class AsyncTasksCommand extends Command
     {
         $this->initOmni();
 
-        $this->omni->roundedBox('Async Task Execution', 'text-cyan-500');
+        $this->omni->titleBar('Async Tasks', 'rose');
         $this->newLine();
 
         $this->omni->info('Running tasks with different outcomes...');

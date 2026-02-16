@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace OmniTerm;
 
+use OmniTerm\Rendering\Renderer;
 use Symfony\Component\Console\Cursor;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Terminal;
-use Termwind\HtmlRenderer;
 
 /**
  * @internal
@@ -22,7 +22,7 @@ final class LiveHtmlRenderer
 
     protected int $options = OutputInterface::OUTPUT_NORMAL;
 
-    protected HtmlRenderer $htmlRenderer;
+    protected Renderer $renderer;
 
     private OutputInterface $output;
 
@@ -37,7 +37,7 @@ final class LiveHtmlRenderer
     public function __construct(?string $html = null, int $options = OutputInterface::OUTPUT_NORMAL)
     {
         $this->output = new ConsoleOutput;
-        $this->htmlRenderer = new HtmlRenderer;
+        $this->renderer = new Renderer;
         $this->options = $options;
         $this->cursor = new Cursor($this->output);
         $this->width = (new Terminal)->getWidth();
@@ -58,7 +58,7 @@ final class LiveHtmlRenderer
 
     public function reRender(string $html): void
     {
-        $message = $this->convertHtmlToMessage($html);
+        $message = $this->renderer->parse($html)->toString();
         if ($message === $this->currentMessage) {
             return;
         }
@@ -69,18 +69,12 @@ final class LiveHtmlRenderer
         }
         if ($previousMessage !== null) {
             if (strlen($previousMessage) > strlen($message)) {
-                /**
-                 * The new message is shorter than the previous message, so it needs to be cleared out as
-                 * pasting the new render over the previous will leave some of the previous visible.
-                 * We only do this if we have to because clearing brings jank.
-                 * We hate jank.
-                 */
                 $this->clearPrevious();
             }
             $this->cursor->moveToPosition(1, $this->startingRow);
         }
         $this->currentMessage = $message;
-        $this->htmlRenderer->parse($html)->render($this->options);
+        $this->renderer->parse($html)->render($this->options);
         $this->setEndRow($message);
 
     }
@@ -91,11 +85,6 @@ final class LiveHtmlRenderer
     private function setEndRow(?string $message): void
     {
         $this->endingRow = $this->cursor->getCurrentPosition()[1];
-        /**
-         *  Set the starting row ready for the next render
-         *  It may have changed if we hit the bottom
-         *  of the terminal window
-         */
         $rows = $this->calculateMessageRows($message);
         $moveUp = $rows + 1;
         $this->startingRow = $this->endingRow - $moveUp;
@@ -124,10 +113,5 @@ final class LiveHtmlRenderer
             $this->cursor->clearLine();
         }
 
-    }
-
-    private function convertHtmlToMessage(string $html): string
-    {
-        return $this->htmlRenderer->parse($html)->toString();
     }
 }

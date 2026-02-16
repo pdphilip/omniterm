@@ -4,14 +4,13 @@ namespace OmniTerm\Helpers;
 
 use Closure;
 use Exception;
-use OmniTerm\AsyncHtmlRenderer;
+use OmniTerm\Async\LiveTask;
 use OmniTerm\Async\SplitBrowser;
+use OmniTerm\AsyncHtmlRenderer;
 use OmniTerm\LiveHtmlRenderer;
+use OmniTerm\Rendering\Renderer;
+use OmniTerm\Rendering\Terminal;
 use Symfony\Component\Console\Output\OutputInterface;
-use Termwind\Repositories\Styles as StyleRepository;
-use Termwind\Terminal;
-use Termwind\Termwind;
-use Termwind\ValueObjects\Style;
 
 use function OmniTerm\ask;
 use function OmniTerm\asyncFunction;
@@ -68,12 +67,12 @@ class OmniHelpers
 
     public function renderUsing(?OutputInterface $renderer): void
     {
-        Termwind::renderUsing($renderer);
+        Renderer::renderUsing($renderer);
     }
 
-    public function style(string $name, ?Closure $callback = null): Style
+    public function style(string $name, ?Closure $callback = null): void
     {
-        return StyleRepository::create($name, $callback);
+        // Custom styles not supported in OmniTerm renderer
     }
 
     public function liveRender(string $html = ''): LiveHtmlRenderer
@@ -89,6 +88,13 @@ class OmniHelpers
     // ----------------------------------------------------------------------
     // Elements
     // ----------------------------------------------------------------------
+
+    public function titleBar(string $title, string $color = 'sky'): void
+    {
+        render(view('omniterm::elements.title-bar', ['t' => '', 'color' => $color]));
+        render(view('omniterm::elements.title-bar', ['t' => $title, 'color' => $color]));
+        render(view('omniterm::elements.title-bar', ['t' => '', 'color' => $color]));
+    }
 
     public function box($title, $borderColor = 'text-gray', $textColor = 'text-gray'): void
     {
@@ -205,6 +211,38 @@ class OmniHelpers
     public function browse(string $label, array $items, Closure $detail, int $scroll = 12, string $hint = ''): mixed
     {
         return SplitBrowser::browse($label, $items, $detail, $scroll, $hint);
+    }
+
+    // ----------------------------------------------------------------------
+    // Live Tasks
+    // ----------------------------------------------------------------------
+
+    public function liveTask(string $title, string $spinner = 'sand', ?array $colors = null, int $us = 1000): LiveTask
+    {
+        return new LiveTask($title, $spinner, $colors, $us);
+    }
+
+    public function task(string $title, callable $callback, string $spinner = 'sand', ?array $colors = null): mixed
+    {
+        $liveTask = $this->liveTask($title, $spinner, $colors);
+        $result = $liveTask->run($callback);
+
+        if (empty($result)) {
+            $liveTask->finishWithError($title.' failed');
+
+            return false;
+        }
+
+        $state = $result['state'] ?? 'success';
+        $message = $result['message'] ?? $title.' completed';
+
+        match ($state) {
+            'error' => $liveTask->finishWithError($message),
+            'warning' => $liveTask->finishWithWarning($message),
+            default => $liveTask->finish($message),
+        };
+
+        return $result;
     }
 
     // ----------------------------------------------------------------------

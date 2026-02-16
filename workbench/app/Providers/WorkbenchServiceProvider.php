@@ -11,9 +11,12 @@ use OmniTerm\Samples\DataTablesCommand;
 use OmniTerm\Samples\FullDemoCommand;
 use OmniTerm\Samples\GlobalFunctionsCommand;
 use OmniTerm\Samples\InteractiveCommand;
+use OmniTerm\Samples\LiveTaskDemoCommand;
 use OmniTerm\Samples\ProgressBarsCommand;
 use OmniTerm\Samples\SpinnersCommand;
 use OmniTerm\Samples\StatusMessagesCommand;
+use OmniTerm\Samples\TailwindClassesCommand;
+use OmniTerm\Samples\TitleBarsCommand;
 use OmniTerm\Samples\VisualElementsCommand;
 
 class WorkbenchServiceProvider extends ServiceProvider
@@ -42,9 +45,12 @@ class WorkbenchServiceProvider extends ServiceProvider
                 FullDemoCommand::class,
                 GlobalFunctionsCommand::class,
                 InteractiveCommand::class,
+                LiveTaskDemoCommand::class,
                 ProgressBarsCommand::class,
                 SpinnersCommand::class,
                 StatusMessagesCommand::class,
+                TailwindClassesCommand::class,
+                TitleBarsCommand::class,
                 VisualElementsCommand::class,
             ]);
         }

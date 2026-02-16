@@ -24,6 +24,9 @@ class SpinnersCommand extends Command
     {
         $this->initOmni();
 
+        $this->omni->titleBar('Spinner Animations', 'amber');
+        $this->newLine();
+
         $spinnerTypes = [
             'dots' => 'Classic braille dots',
             'dots2' => 'Double braille pattern',

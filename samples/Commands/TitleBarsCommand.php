@@ -1,0 +1,35 @@
+<?php
+
+namespace OmniTerm\Samples;
+
+use Illuminate\Console\Command;
+use OmniTerm\OmniTerm;
+
+class TitleBarsCommand extends Command
+{
+    use OmniTerm;
+
+    protected $signature = 'omniterm:title-bars';
+
+    protected $description = 'OmniTerm Sample: Title Bar Colors';
+
+    public function handle(): int
+    {
+        $this->initOmni();
+
+        $colors = [
+            'slate', 'gray', 'zinc', 'neutral', 'stone',
+            'red', 'orange', 'amber', 'yellow', 'lime',
+            'green', 'emerald', 'teal', 'cyan', 'sky',
+            'blue', 'indigo', 'violet', 'purple', 'fuchsia',
+            'pink', 'rose',
+        ];
+
+        foreach ($colors as $color) {
+            $this->omni->titleBar($color, $color);
+            $this->newLine();
+        }
+
+        return self::SUCCESS;
+    }
+}

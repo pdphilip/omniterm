@@ -24,7 +24,7 @@ class ProgressBarsCommand extends Command
     {
         $this->initOmni();
 
-        $this->omni->roundedBox('Progress Bar Styles', 'text-cyan-500');
+        $this->omni->titleBar('Progress Bars', 'emerald');
         $this->newLine();
 
         // Framed progress bar with colors

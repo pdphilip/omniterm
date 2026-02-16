@@ -24,7 +24,7 @@ class DataTablesCommand extends Command
     {
         $this->initOmni();
 
-        $this->omni->roundedBox('System Configuration', 'text-cyan-500');
+        $this->omni->titleBar('Data Tables', 'teal');
         $this->newLine();
 
         // Header row

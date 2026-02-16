@@ -24,7 +24,7 @@ class CustomColorsCommand extends Command
     {
         $this->initOmni();
 
-        $this->omni->roundedBox('Custom Color Schemes', 'text-cyan-500');
+        $this->omni->titleBar('Custom Colors', 'pink');
         $this->newLine();
 
         // Default colors

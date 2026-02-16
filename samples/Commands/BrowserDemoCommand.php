@@ -23,6 +23,11 @@ class BrowserDemoCommand extends Command
 
     public function handle(): int
     {
+        $this->initOmni();
+
+        $this->omni->titleBar('Split Browser', 'orange');
+        $this->newLine();
+
         $servers = [
             'web-01' => ['status' => 'running', 'cpu' => '23%', 'memory' => '4.2 GB / 8 GB', 'uptime' => '14 days', 'ip' => '10.0.1.10', 'os' => 'Ubuntu 22.04', 'load' => '0.45 0.32 0.28'],
             'web-02' => ['status' => 'running', 'cpu' => '67%', 'memory' => '6.1 GB / 8 GB', 'uptime' => '14 days', 'ip' => '10.0.1.11', 'os' => 'Ubuntu 22.04', 'load' => '1.82 1.45 1.12'],

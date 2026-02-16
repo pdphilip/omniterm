@@ -25,8 +25,7 @@ class FullDemoCommand extends Command
     {
         $this->initOmni();
 
-        // Header
-        $this->omni->roundedBox('Application Deployment', 'text-cyan-500', 'text-white');
+        $this->omni->titleBar('Application Deployment', 'cyan');
         $this->newLine();
 
         // Pre-flight checks

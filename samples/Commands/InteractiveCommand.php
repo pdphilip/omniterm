@@ -24,7 +24,7 @@ class InteractiveCommand extends Command
     {
         $this->initOmni();
 
-        $this->omni->roundedBox('Interactive Prompts', 'text-cyan-500');
+        $this->omni->titleBar('Interactive Prompts', 'indigo');
         $this->newLine();
 
         // Simple question

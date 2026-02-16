@@ -24,6 +24,9 @@ class VisualElementsCommand extends Command
     {
         $this->initOmni();
 
+        $this->omni->titleBar('Visual Elements', 'violet');
+        $this->newLine();
+
         // Rounded boxes (default style)
         $this->omni->roundedBox('Rounded Box - Default');
 

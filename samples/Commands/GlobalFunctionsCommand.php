@@ -27,8 +27,9 @@ class GlobalFunctionsCommand extends Command
         $width = terminal()->getWidth();
         $height = terminal()->getHeight();
 
-        render('<div class="mx-1 text-cyan-500 font-bold">Global Functions Demo</div>');
-        render('<div class="mx-1 text-gray">────────────────────────────────────</div>');
+        render(view('omniterm::elements.title-bar', ['t' => '', 'color' => 'cyan']));
+        render(view('omniterm::elements.title-bar', ['t' => 'Global Functions', 'color' => 'cyan']));
+        render(view('omniterm::elements.title-bar', ['t' => '', 'color' => 'cyan']));
         $this->newLine();
 
         // Terminal dimensions
