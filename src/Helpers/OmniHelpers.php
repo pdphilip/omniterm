@@ -4,8 +4,8 @@ namespace OmniTerm\Helpers;
 
 use Closure;
 use Exception;
-use OmniTerm\AsyncHtmlRenderer;
 use OmniTerm\Async\SplitBrowser;
+use OmniTerm\AsyncHtmlRenderer;
 use OmniTerm\LiveHtmlRenderer;
 use Symfony\Component\Console\Output\OutputInterface;
 use Termwind\Repositories\Styles as StyleRepository;
