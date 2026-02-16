@@ -73,19 +73,19 @@ final class AsyncHtmlRenderer
         return $this->executeAsync($render, $us);
     }
 
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
     // Sync Fail Over
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     public function executeSync(callable $render): mixed
     {
         $this->isRunning = true;
-        //Render first time
+        // Render first time
         $this->renderSync($render);
-        //Execute
+        // Execute
         $output = ($this->task)();
         $this->isRunning = false;
-        //Render again
+        // Render again
         $this->renderSync($render);
         if ($output) {
             return $output;
@@ -103,9 +103,9 @@ final class AsyncHtmlRenderer
         }
     }
 
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
     // Async Fork methods
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     private function executeAsync(callable $render, int $us = 10000): mixed
     {
