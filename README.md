@@ -8,7 +8,9 @@
 
 **A terminal UI toolkit for Laravel Artisan commands**
 
-Build beautiful CLI interfaces with styled output, progress bars, spinners, and async task execution.
+Build rich CLI interfaces with styled output, progress bars, spinners, interactive browsers, and async task execution — all using familiar Tailwind CSS-style classes.
+
+![Progress Bars](docs/gifs/progress-bars.gif)
 
 </div>
 
@@ -22,7 +24,7 @@ composer require pdphilip/omniterm
 
 ## Quick Start
 
-Add the `OmniTerm` trait to your Artisan command:
+Add the `OmniTerm` trait to your Artisan command and call `initOmni()`:
 
 ```php
 <?php
@@ -42,6 +44,7 @@ class MyCommand extends Command
     {
         $this->initOmni();
 
+        $this->omni->titleBar('My App', 'sky');
         $this->omni->success('Operation completed successfully!');
     }
 }
@@ -56,32 +59,130 @@ mkdir -p app/Console/Commands/OmniTermSamples
 cp vendor/pdphilip/omniterm/samples/Commands/*.php app/Console/Commands/OmniTermSamples/
 ```
 
-Then run:
+Then update the namespace in each file to `App\Console\Commands\OmniTermSamples` and run:
 
 ```bash
-php artisan omniterm:full-demo        # Complete demo (simulated deployment)
-php artisan omniterm:status-messages  # Status message examples
-php artisan omniterm:progress-bars    # Progress bar styles
-php artisan omniterm:spinners         # All 10 spinner animations
-php artisan omniterm:data-tables      # Key-value tables
-php artisan omniterm:async-tasks      # Async task execution
+php artisan omniterm:full-demo          # Complete demo (simulated deployment)
+php artisan omniterm:status-messages    # Status messages
+php artisan omniterm:progress-bars      # All progress bar styles
+php artisan omniterm:spinners           # All 10 spinner animations
+php artisan omniterm:data-tables        # Key-value tables
+php artisan omniterm:visual-elements    # Boxes and horizontal rules
+php artisan omniterm:async-tasks        # Async task execution
+php artisan omniterm:interactive        # Interactive prompts
+php artisan omniterm:tailwind-classes   # Every supported CSS class
+php artisan omniterm:custom-colors      # Custom color schemes
+php artisan omniterm:global-functions   # Using global functions
 ```
-
-See [samples/README.md](samples/README.md) for the full list.
 
 ---
 
 ## Features
 
-- [Status Messages](#status-messages) - Styled feedback messages
-- [Detailed Statuses](#detailed-statuses) - Status blocks with title, details, and help text
-- [Data Tables](#data-tables) - Key-value rows with status indicators
-- [Visual Elements](#visual-elements) - Boxes and horizontal rules
-- [Progress Bars](#progress-bars) - Framed and simple styles with color support
-- [Spinners & Loaders](#spinners--loaders) - Animated spinners for async tasks
-- [Async Task Execution](#async-task-execution) - Run tasks with visual feedback
-- [Interactive Prompts](#interactive-prompts) - Ask questions with autocomplete
-- [Global Functions](#global-functions) - Render HTML directly to terminal
+- [HTML Rendering Engine](#html-rendering-engine) — Write terminal UI with HTML and Tailwind CSS classes
+- [Status Messages](#status-messages) — Styled feedback messages
+- [Detailed Statuses](#detailed-statuses) — Status blocks with title, details, and help text
+- [Data Tables](#data-tables) — Key-value rows with status indicators
+- [Visual Elements](#visual-elements) — Title bars, boxes, and horizontal rules
+- [Progress Bars](#progress-bars) — Framed, simple, and gradient styles
+- [Live Tasks](#live-tasks) — Run tasks with animated spinners
+- [Spinners & Loaders](#spinners--loaders) — 10 spinner animations for async operations
+- [Interactive Browser](#interactive-browser) — Split-pane list with detail view
+- [Interactive Prompts](#interactive-prompts) — Ask questions with autocomplete
+- [Global Functions](#global-functions) — Render HTML directly to terminal
+
+---
+
+## HTML Rendering Engine
+
+OmniTerm includes a built-in HTML-to-ANSI rendering engine. Write terminal output using HTML tags and Tailwind CSS-style classes — no external rendering dependencies needed.
+
+```php
+use function OmniTerm\render;
+
+render('<div class="flex">
+    <span class="bg-emerald-600 text-emerald-100 font-bold px-1">PASS</span>
+    <span class="flex-1 text-zinc-400 px-1">Database connection verified</span>
+    <span class="text-zinc-600 text-right w-12">12ms</span>
+</div>');
+```
+
+### Supported Classes
+
+#### Layout
+
+| Class | Description |
+|-------|-------------|
+| `flex` | Flex container (horizontal layout) |
+| `flex-1` | Fill remaining space in a flex row |
+| `w-{n}` | Fixed width in characters (e.g. `w-20`) |
+| `space-x-{n}` | Gap between flex children |
+
+#### Spacing
+
+| Class | Description |
+|-------|-------------|
+| `px-{n}` | Horizontal padding |
+| `pl-{n}` / `pr-{n}` | Left / right padding |
+| `m-{n}` | Margin on all sides |
+| `mx-{n}` | Horizontal margin |
+| `ml-{n}` / `mr-{n}` | Left / right margin |
+| `mt-{n}` / `mb-{n}` | Top / bottom margin (blank lines) |
+
+#### Typography
+
+| Class | Description |
+|-------|-------------|
+| `font-bold` | Bold text |
+| `text-center` | Center-align text |
+| `text-right` | Right-align text |
+
+#### Colors
+
+| Class | Description |
+|-------|-------------|
+| `text-{color}-{shade}` | Text color (e.g. `text-sky-500`) |
+| `text-{color}` | Text color, defaults to shade 500 |
+| `bg-{color}-{shade}` | Background color (e.g. `bg-red-600`) |
+| `text-[R,G,B]` | Arbitrary RGB text color (e.g. `text-[255,100,50]`) |
+| `bg-[R,G,B]` | Arbitrary RGB background color |
+
+All [Tailwind CSS colors](https://tailwindcss.com/docs/customizing-colors) are supported: slate, gray, zinc, neutral, stone, red, orange, amber, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet, purple, fuchsia, pink, rose — each with shades 50–950.
+
+#### Gradients
+
+| Class | Description |
+|-------|-------------|
+| `bg-gradient-to-r` | Left-to-right gradient |
+| `bg-gradient-to-l` | Right-to-left gradient |
+| `from-{color}-{shade}` | Gradient start color |
+| `to-{color}-{shade}` | Gradient end color |
+| `via-{color}-{shade}` | Gradient midpoint color |
+
+```php
+render('<div class="flex">
+    <span class="flex-1 bg-gradient-to-r from-indigo-800 via-purple-500 to-pink-400 text-white text-center">
+        Smooth gradient
+    </span>
+</div>');
+```
+
+#### Content
+
+| Class | Description |
+|-------|-------------|
+| `content-repeat-[char]` | Repeat a character to fill width (e.g. `content-repeat-[─]`) |
+
+### Color Mode Detection
+
+OmniTerm automatically detects your terminal's color capabilities:
+
+- **Truecolor (16M)** — Full RGB colors. Used by iTerm2, Kitty, WezTerm, most modern terminals.
+- **256-color** — Automatic fallback for older terminals (e.g. Apple Terminal). Colors are mapped to the nearest match.
+
+No configuration needed — it just works.
+
+![Tailwind Classes](docs/gifs/tailwind-classes.gif)
 
 ---
 
@@ -106,11 +207,13 @@ $this->omni->disabled('Feature disabled');  // Gray "OFF" badge
  OFF   Feature disabled
 ```
 
+![Status Messages](docs/gifs/status-messages.gif)
+
 ---
 
 ## Detailed Statuses
 
-Status blocks with horizontal rules, title, details, and optional help text:
+Status blocks with title, details, and optional help text:
 
 ```php
 $this->omni->statusSuccess(
@@ -139,7 +242,7 @@ $this->omni->status('success', 'Title', 'Details text', ['Help line 1', 'Help li
 
 ## Data Tables
 
-Create formatted key-value tables with status indicators:
+Formatted key-value tables with status indicators:
 
 ```php
 // Header row
@@ -168,9 +271,9 @@ $this->omni->rowFailed('Sync Task', 'Retrying in 5s');
  Connection ............................ SUCCESS
  SSL Certificate ....................... FAILED
  Memory ................................ WARNING [85% used]
- Version ............................... INFO [8.2.0]
- Debug Mode ............................ DISABLED
 ```
+
+![Data Tables](docs/gifs/data-tables.gif)
 
 **With help text:**
 ```php
@@ -184,24 +287,30 @@ $this->omni->rowError('API Key', 'Missing', [
 
 ## Visual Elements
 
+### Title Bar
+
+Full-width colored title bar with gradient wings:
+
+```php
+$this->omni->titleBar('My Application', 'sky');
+$this->omni->titleBar('Deployment', 'emerald');
+```
+
 ### Boxes
 
 ```php
-// Rounded corners (default)
 $this->omni->roundedBox('Welcome to MyApp', 'text-cyan-500', 'text-white');
-
-// Square corners
 $this->omni->box('Configuration', 'text-amber-500', 'text-gray');
 ```
 
 **Output:**
 ```
  ╭──────────────────────────────────────╮
- │                                      │
  │          Welcome to MyApp            │
- │                                      │
  ╰──────────────────────────────────────╯
 ```
+
+![Visual Elements](docs/gifs/visual-elements.gif)
 
 ### Horizontal Rules
 
@@ -224,6 +333,7 @@ $this->omni->hrDisabled();      // Gray
 ### Framed Progress Bar
 
 ```php
+// With color gradient (red → green as progress increases)
 $this->omni->createProgressBar(100, withColors: true);
 $this->omni->showProgress();
 
@@ -235,11 +345,10 @@ foreach ($items as $item) {
 $this->omni->progressFinish();
 ```
 
-**Output (with colors - changes from red to green as progress increases):**
 ```
-                    ╭────────────────────────────────────────╮
-         0/100     │▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁│  0%
-                    ╰────────────────────────────────────────╯
+          ╭────────────────────────────────────────╮
+ 50/100   │▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁                    │  50%
+          ╰────────────────────────────────────────╯
 ```
 
 ### Simple Progress Bar
@@ -255,23 +364,104 @@ for ($i = 0; $i < 50; $i++) {
 $this->omni->progressFinish();
 ```
 
-### Progress Bar Options
+### Gradient Progress Bar
+
+The bar, border, and label smoothly transition from amber to emerald as progress increases:
+
+```php
+$this->omni->createGradientProgressBar(60);
+$this->omni->showProgress();
+
+for ($i = 0; $i < 60; $i++) {
+    $this->omni->progressAdvance();
+}
+
+$this->omni->progressFinish();
+```
+
+### Variable Increments
+
+```php
+$this->omni->createProgressBar(100, withColors: true);
+$this->omni->showProgress();
+
+$this->omni->progressAdvance(25);  // Jump by 25
+$this->omni->progressAdvance(10);  // Jump by 10
+$this->omni->progressFinish();
+```
+
+### Progress Bar Methods
 
 | Method | Description |
 |--------|-------------|
-| `createProgressBar($total, $withColors)` | Framed style with optional color gradient |
+| `createProgressBar($total, $withColors)` | Framed style, optional color steps |
 | `createSimpleProgressBar($total, $withColors)` | Minimal style |
+| `createGradientProgressBar($total)` | Smooth amber → emerald gradient |
 | `showProgress()` | Display the progress bar |
 | `progressAdvance($by = 1)` | Increment progress |
 | `progressFinish()` | Complete and show 100% |
 
 ---
 
+## Live Tasks
+
+Run a task with an animated spinner. The spinner runs while your callback executes in a background process:
+
+```php
+$this->omni->newLoader('sand');
+
+$result = $this->omni->runTask('Processing data...', function () {
+    // Your long-running task
+    sleep(3);
+    return ['state' => 'success', 'message' => 'Data processed'];
+});
+```
+
+### Task with Tracked Rows
+
+`liveTask()` gives you fine-grained control with live-updating counters:
+
+```php
+$task = $this->omni->liveTask('Syncing records', 'dots');
+$task->row('Processed', 0);
+$task->row('Skipped', 0);
+
+$result = $task->run(function () use ($task) {
+    foreach ($records as $record) {
+        if ($record->sync()) {
+            $task->increment('Processed');
+        } else {
+            $task->increment('Skipped');
+        }
+    }
+    return ['state' => 'success', 'message' => 'Sync complete'];
+});
+
+$task->finish('All done');
+```
+
+### Task Return Values
+
+Your callback should return an array:
+
+```php
+return [
+    'state' => 'success',      // success, warning, or error
+    'message' => 'Done!',      // Completion message
+    'details' => 'Extra info',  // Optional details
+];
+```
+
+**States:**
+- `success` — Green checkmark
+- `warning` — Amber warning
+- `error` — Red X
+
+---
+
 ## Spinners & Loaders
 
-OmniTerm includes 10 spinner animations for visual feedback during async operations.
-
-### Available Spinner Types
+10 built-in spinner animations:
 
 | Type | Preview | Description |
 |------|---------|-------------|
@@ -286,102 +476,67 @@ OmniTerm includes 10 spinner animations for visual feedback during async operati
 | `progress` | ▰▱▱ | Progress indicator |
 | `progressLoader` | ▰▱▱ | Looping progress |
 
-### Basic Spinner Usage
+### Custom Spinner Colors
 
-```php
-$this->omni->newLoader('sand');
-
-$result = $this->omni->runTask('Processing data...', function () {
-    // Your long-running task
-    sleep(3);
-    return ['state' => 'success', 'message' => 'Data processed'];
-});
-```
-
-### Spinner with Custom Colors
-
-Colors cycle through as the spinner animates:
+Colors cycle as the spinner animates:
 
 ```php
 $this->omni->newLoader('dots', [
     'text-amber-500',
     'text-emerald-500',
     'text-rose-500',
-    'text-sky-500'
+    'text-sky-500',
 ]);
-
-$this->omni->runTask('Building...', function () {
-    // Task code
-    return ['state' => 'success'];
-});
 ```
-
-### Task Return Values
-
-Your task callback should return an array with optional keys:
-
-```php
-$this->omni->runTask('My Task', function () {
-    // Do work...
-
-    return [
-        'state' => 'success',   // success, warning, or error
-        'message' => 'Done!',   // Completion message
-        'details' => 'Extra info', // Optional details
-    ];
-});
-```
-
-**States:**
-- `success` - Shows green checkmark ✔
-- `warning` - Shows amber warning ⚠
-- `error` - Shows red X ✘
 
 ---
 
-## Async Task Execution
+## Interactive Browser
 
-OmniTerm can run tasks asynchronously using process forking, displaying a spinner while the task executes in the background.
+A split-pane TUI component — scrollable list on the left, detail view on the right:
 
-```php
-$this->omni->newLoader('material', ['text-sky-500', 'text-emerald-500'], 1000);
-
-$result = $this->omni->runTask('Syncing with remote server...', function () {
-    // This runs in a forked process
-    $data = file_get_contents('https://api.example.com/sync');
-
-    if ($data) {
-        return [
-            'state' => 'success',
-            'message' => 'Sync complete',
-            'details' => 'Downloaded 1.2MB'
-        ];
-    }
-
-    return [
-        'state' => 'error',
-        'message' => 'Sync failed'
-    ];
-});
-
-if ($result['state'] === 'success') {
-    // Continue processing
-}
+```
+╭─ Select an Index ────────────────┬───────────────────────────────────╮
+│ › users                          │ Documents: 1,234                  │
+│   companies                      │ Store Size: 45.2mb                │
+│   products                       │ Health: green                     │
+│   blog_posts                     │                                   │
+╰──────────────────────────────────┴───────────────────────────────────╯
+  ↑/↓ Navigate  Enter Select  q/Esc Exit
 ```
 
-**Note:** Async execution requires the `pcntl` extension. On systems without it (like Windows), tasks run synchronously with a fallback display.
+```php
+$selected = $this->omni->browse(
+    label: 'Select an Index',
+    items: ['users', 'companies', 'products'],
+    detail: fn (string $item) => [
+        "Documents: 1,234",
+        "Store Size: 45.2mb",
+        "Health: green",
+    ],
+    scroll: 12,
+    hint: '↑/↓ Navigate  Enter Select  q/Esc Exit',
+);
+
+// Returns the selected item string, or null on Esc/q
+```
+
+**Parameters:**
+- `label` — Title shown in the top-left border
+- `items` — Array of string labels for the list
+- `detail` — Closure that receives the selected item and returns an array of lines for the right pane
+- `scroll` — Max visible rows (default: 12)
+- `hint` — Footer text
 
 ---
 
 ## Interactive Prompts
 
-Ask the user for input with optional autocomplete suggestions:
+Ask the user for input with optional autocomplete:
 
 ```php
-// Simple question
 $name = $this->omni->ask('What is your name?');
 
-// With autocomplete options
 $color = $this->omni->ask('Choose a color:', ['red', 'green', 'blue']);
 ```
 
@@ -389,11 +544,11 @@ $color = $this->omni->ask('Choose a color:', ['red', 'green', 'blue']);
 
 ## Global Functions
 
-OmniTerm provides functions for direct HTML-to-terminal rendering:
+Use these anywhere — no trait or initialization needed:
 
 ### `render()`
 
-Render HTML with Tailwind CSS classes to the terminal:
+Render HTML to the terminal:
 
 ```php
 use function OmniTerm\render;
@@ -417,31 +572,14 @@ for ($i = 1; $i <= 100; $i++) {
 }
 ```
 
-### `asyncFunction()`
+### `parse()`
 
-Create an async renderer for custom async operations:
-
-```php
-use function OmniTerm\asyncFunction;
-
-$async = asyncFunction(function () {
-    // Background task
-    return ['done' => true];
-});
-
-$result = $async->run(function () use ($async) {
-    $async->render('<div>Working...</div>');
-}, 10000); // Update every 10ms
-```
-
-### `ask()`
-
-Prompt for user input:
+Convert HTML to an ANSI string without printing:
 
 ```php
-use function OmniTerm\ask;
+use function OmniTerm\parse;
 
-$answer = ask('Continue? (y/n)');
+$ansi = parse('<span class="text-sky-500">Hello</span>');
 ```
 
 ### `terminal()`
@@ -455,11 +593,21 @@ $width = terminal()->getWidth();
 $height = terminal()->getHeight();
 ```
 
+### `ask()`
+
+Prompt for user input:
+
+```php
+use function OmniTerm\ask;
+
+$answer = ask('Continue? (y/n)');
+```
+
 ---
 
 ## Customizing Colors
 
-Override the default status colors:
+Override the default status colors used by status messages, data rows, and horizontal rules:
 
 ```php
 $this->initOmni();
@@ -470,8 +618,6 @@ $this->omni->warningColor = 'orange';  // Default: amber
 $this->omni->infoColor = 'blue';       // Default: sky
 $this->omni->disabledColor = 'gray';   // Default: zinc
 ```
-
-Colors use Tailwind CSS color names (without the number suffix).
 
 ---
 
@@ -496,8 +642,7 @@ class DeployCommand extends Command
     {
         $this->initOmni();
 
-        // Header
-        $this->omni->roundedBox('Deployment Starting', 'text-cyan-500');
+        $this->omni->titleBar('Deployment', 'sky');
 
         // Configuration check
         $this->omni->header('Check', 'Status');
@@ -508,17 +653,15 @@ class DeployCommand extends Command
         $this->omni->hrInfo();
 
         // Run migrations with spinner
-        $this->omni->newLoader('sand', ['text-amber-500', 'text-emerald-500']);
-
-        $result = $this->omni->runTask('Running migrations', function () {
-            // Artisan::call('migrate', ['--force' => true]);
-            sleep(2); // Simulated work
+        $this->omni->newLoader('sand');
+        $this->omni->runTask('Running migrations', function () {
+            sleep(2);
             return ['state' => 'success', 'message' => 'Migrations complete'];
         });
 
-        // Build assets with progress bar
+        // Build assets with gradient progress bar
         $this->omni->info('Building assets...');
-        $this->omni->createProgressBar(100, true);
+        $this->omni->createGradientProgressBar(100);
         $this->omni->showProgress();
 
         for ($i = 0; $i < 100; $i++) {
@@ -549,7 +692,17 @@ class DeployCommand extends Command
 
 ## Dependencies
 
-- [nunomaduro/termwind](https://github.com/nunomaduro/termwind) - HTML to terminal rendering
+- `symfony/console` — Terminal output and cursor control
+- `laravel/prompts` — Interactive prompt primitives (used by SplitBrowser)
+
+## Testing
+
+```bash
+composer test        # Lint + PHPStan + Pest
+composer test:unit   # Pest only
+composer types       # PHPStan only
+composer format      # Laravel Pint
+```
 
 ## License
 
