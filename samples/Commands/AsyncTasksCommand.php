@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\OmniTermSamples;
+namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
 use OmniTerm\OmniTerm;

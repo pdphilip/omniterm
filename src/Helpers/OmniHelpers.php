@@ -2,10 +2,20 @@
 
 namespace OmniTerm\Helpers;
 
+use Closure;
 use Exception;
+use OmniTerm\AsyncHtmlRenderer;
+use OmniTerm\Async\SplitBrowser;
+use OmniTerm\LiveHtmlRenderer;
+use Symfony\Component\Console\Output\OutputInterface;
+use Termwind\Repositories\Styles as StyleRepository;
+use Termwind\Terminal;
+use Termwind\Termwind;
+use Termwind\ValueObjects\Style;
 
 use function OmniTerm\ask;
 use function OmniTerm\asyncFunction;
+use function OmniTerm\parse;
 use function OmniTerm\render;
 
 class OmniHelpers
@@ -37,9 +47,48 @@ class OmniHelpers
         ];
     }
 
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // Inline HTML
+    // ----------------------------------------------------------------------
+
+    public function line(string $html): void
+    {
+        render($html);
+    }
+
+    public function parse(string $html): string
+    {
+        return parse($html);
+    }
+
+    public function terminal(): Terminal
+    {
+        return new Terminal;
+    }
+
+    public function renderUsing(?OutputInterface $renderer): void
+    {
+        Termwind::renderUsing($renderer);
+    }
+
+    public function style(string $name, ?Closure $callback = null): Style
+    {
+        return StyleRepository::create($name, $callback);
+    }
+
+    public function liveRender(string $html = ''): LiveHtmlRenderer
+    {
+        return new LiveHtmlRenderer($html);
+    }
+
+    public function async(callable $task): AsyncHtmlRenderer
+    {
+        return new AsyncHtmlRenderer($task);
+    }
+
+    // ----------------------------------------------------------------------
     // Elements
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     public function box($title, $borderColor = 'text-gray', $textColor = 'text-gray'): void
     {
@@ -81,9 +130,9 @@ class OmniHelpers
         render(view('omniterm::elements.hr', ['color' => 'text-'.$this->disabledColor.'-500']));
     }
 
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
     // Data tables
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     public function header($keyName, $valueName, $detailsName = null): void
     {
@@ -140,18 +189,27 @@ class OmniHelpers
         render(view('omniterm::elements.data-row-status', ['key' => $key, 'status' => $status, 'details' => $details, 'help' => $help, 'statusColors' => $this->statusColors()]));
     }
 
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
     // ASK
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     public function ask($question, $options = []): mixed
     {
         return ask(view('omniterm::elements.question', ['question' => $question, 'options' => $options]), $options);
     }
 
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // Browser
+    // ----------------------------------------------------------------------
+
+    public function browse(string $label, array $items, Closure $detail, int $scroll = 12, string $hint = ''): mixed
+    {
+        return SplitBrowser::browse($label, $items, $detail, $scroll, $hint);
+    }
+
+    // ----------------------------------------------------------------------
     // Feedback titles
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     public function error($message): void
     {
@@ -178,9 +236,9 @@ class OmniHelpers
         render(view('omniterm::status.disabled', ['message' => $message], ['color' => $this->disabledColor]));
     }
 
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
     // Statuses
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     public function status(string $status, string $title, string $details, array $help = []): void
     {
@@ -212,9 +270,9 @@ class OmniHelpers
         $this->status('disabled', $title, $details, $help);
     }
 
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
     // Progress bars
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     /**
      * @throws Exception
@@ -273,9 +331,9 @@ class OmniHelpers
         $this->progressInstance->finish();
     }
 
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
     // Loaders
-    //----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
     public function newLoader($type = 'sand', $colors = null, $us = 1000): void
     {

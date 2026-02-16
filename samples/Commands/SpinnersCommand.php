@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\OmniTermSamples;
+namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
 use OmniTerm\OmniTerm;
@@ -56,7 +56,7 @@ class SpinnersCommand extends Command
         $this->newLine();
 
         foreach ($spinnerTypes as $type => $description) {
-            $this->line("  <fg=yellow>{$type}</> - {$description}");
+            $this->omni->line("<div><span class='text-yellow-400'>{$type}</span>  - {$description}</div>");
         }
 
         $this->newLine();
@@ -86,7 +86,7 @@ class SpinnersCommand extends Command
         $this->omni->success('All spinner demos complete!');
         $this->newLine();
 
-        $this->line('  <fg=gray>Tip: Run with --type=sand to demo a specific spinner</>');
+        $this->omni->line('<div class="text-gray-400">Tip: Run with --type=sand to demo a specific spinner</div>');
 
         return Command::SUCCESS;
     }
