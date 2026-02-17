@@ -63,7 +63,7 @@ class OmniHelpers
         try {
             return view($view, $data)->render();
         } catch (InvalidArgumentException $e) {
-            $this->omniError($view, 'View not found', "Check that the omniterm views are published or the package is installed correctly");
+            $this->omniError($view, 'View not found', 'Check that the omniterm views are published or the package is installed correctly');
         }
     }
 
@@ -439,7 +439,7 @@ class OmniHelpers
     public function runTask($title, $task): mixed
     {
         if (empty($this->async)) {
-            $this->omniError('runTask()','No loader instance found', 'Call newLoader() first');
+            $this->omniError('runTask()', 'No loader instance found', 'Call newLoader() first');
         }
         $async = $this->asyncLoader;
         $async->withTask($task);

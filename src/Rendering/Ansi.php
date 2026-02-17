@@ -16,37 +16,37 @@ final class Ansi
 
     public static function hideCursor(): string
     {
-        return self::ESC . '?25l';
+        return self::ESC.'?25l';
     }
 
     public static function showCursor(): string
     {
-        return self::ESC . '?25h';
+        return self::ESC.'?25h';
     }
 
     public static function moveUp(int $lines = 1): string
     {
-        return $lines > 0 ? self::ESC . "{$lines}A" : '';
+        return $lines > 0 ? self::ESC."{$lines}A" : '';
     }
 
     public static function moveDown(int $lines = 1): string
     {
-        return $lines > 0 ? self::ESC . "{$lines}B" : '';
+        return $lines > 0 ? self::ESC."{$lines}B" : '';
     }
 
     public static function moveToColumn(int $col = 1): string
     {
-        return self::ESC . "{$col}G";
+        return self::ESC."{$col}G";
     }
 
     public static function eraseLine(): string
     {
-        return self::ESC . '2K';
+        return self::ESC.'2K';
     }
 
     public static function eraseDown(): string
     {
-        return self::ESC . 'J';
+        return self::ESC.'J';
     }
 
     public static function carriageReturn(): string
