@@ -22,8 +22,6 @@ class ProgressBarsCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $this->omni->titleBar('Progress Bars', 'emerald');
         $this->newLine();
 

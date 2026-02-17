@@ -23,8 +23,6 @@ class BrowserDemoCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $this->omni->titleBar('Split Browser', 'orange');
         $this->newLine();
 

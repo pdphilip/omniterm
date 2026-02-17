@@ -55,8 +55,6 @@ class MyCommand extends Command
 
     public function handle()
     {
-        $this->initOmni();
-
         $this->omni->success('Ready');
     }
 }
@@ -81,21 +79,21 @@ $this->omni->statusSuccess('Migration Complete', 'All 42 records processed', ['R
 $this->omni->statusError('Connection Failed', 'Could not reach database', ['Check .env', 'Ensure MySQL is running']);
 ```
 
-![Status Messages](docs/gifs/status-messages.gif)
+![Status Messages](./docs/gifs/status-messages.gif)
 
 ### Data Tables
 
 Key-value rows with status indicators:
 
 ```php
-$this->omni->header('Setting', 'Value', 'Notes');
-$this->omni->row('Database', 'mysql', 'Production server');
-$this->omni->rowSuccess('Connection', 'Active');
-$this->omni->rowError('SSL Certificate', 'Expired');
-$this->omni->rowWarning('Memory', '85% used');
+$this->omni->tableHeader('Setting', 'Value', 'Notes');
+$this->omni->tableRow('Database', 'mysql', 'Production server');
+$this->omni->tableRowSuccess('Connection', 'Active');
+$this->omni->tableRowError('SSL Certificate', 'Expired');
+$this->omni->tableRowWarning('Memory', '85% used');
 ```
 
-![Data Tables](docs/gifs/data-tables.gif)
+![Data Tables](./docs/gifs/data-tables.gif)
 
 ### Visual Elements
 
@@ -108,7 +106,7 @@ $this->omni->hr();
 $this->omni->hrSuccess();
 ```
 
-![Visual Elements](docs/gifs/visual-elements.gif)
+![Visual Elements](./docs/gifs/visual-elements.gif)
 
 ### Progress Bars
 
@@ -133,7 +131,7 @@ $this->omni->createProgressBar(100, withColors: true);   // Framed with color st
 $this->omni->createSimpleProgressBar(50);                 // Minimal bar
 ```
 
-![Progress Bars](docs/gifs/progress-bars.gif)
+![Progress Bars](./docs/gifs/progress-bars.gif)
 
 ### Live Tasks
 
@@ -264,51 +262,52 @@ $height = terminal()->getHeight();
 
 #### Layout
 
-| Class | Effect |
-|-------|--------|
-| `flex` | Horizontal layout |
-| `flex-1` | Fill remaining space |
-| `w-{n}` | Fixed width in characters |
-| `space-x-{n}` | Gap between children |
+| Class         | Effect                    |
+|---------------|---------------------------|
+| `flex`        | Horizontal layout         |
+| `flex-1`      | Fill remaining space      |
+| `w-{n}`       | Fixed width in characters |
+| `space-x-{n}` | Gap between children      |
 
 #### Spacing
 
-| Class | Effect |
-|-------|--------|
-| `px-{n}`, `pl-{n}`, `pr-{n}` | Horizontal padding |
-| `mx-{n}`, `ml-{n}`, `mr-{n}` | Horizontal margin |
-| `mt-{n}`, `mb-{n}` | Vertical margin (blank lines) |
+| Class                        | Effect                        |
+|------------------------------|-------------------------------|
+| `px-{n}`, `pl-{n}`, `pr-{n}` | Horizontal padding            |
+| `mx-{n}`, `ml-{n}`, `mr-{n}` | Horizontal margin             |
+| `mt-{n}`, `mb-{n}`           | Vertical margin (blank lines) |
 
 #### Typography
 
-| Class | Effect |
-|-------|--------|
-| `font-bold` | Bold |
+| Class         | Effect       |
+|---------------|--------------|
+| `font-bold`   | Bold         |
 | `text-center` | Center-align |
-| `text-right` | Right-align |
+| `text-right`  | Right-align  |
 
 #### Colors
 
-All [Tailwind colors](https://tailwindcss.com/docs/customizing-colors) with shades 50-950: slate, gray, zinc, neutral, stone, red, orange, amber, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet, purple, fuchsia, pink, rose.
+All [Tailwind colors](https://tailwindcss.com/docs/customizing-colors) with shades 50-950: slate, gray, zinc, neutral, stone, red, orange, amber, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet, purple, fuchsia, pink,
+rose.
 
-| Class | Effect |
-|-------|--------|
-| `text-{color}-{shade}` | Text color, e.g. `text-sky-500` |
-| `bg-{color}-{shade}` | Background color, e.g. `bg-red-600` |
-| `text-[R,G,B]` | Arbitrary RGB text, e.g. `text-[255,100,50]` |
-| `bg-[R,G,B]` | Arbitrary RGB background |
+| Class                  | Effect                                       |
+|------------------------|----------------------------------------------|
+| `text-{color}-{shade}` | Text color, e.g. `text-sky-500`              |
+| `bg-{color}-{shade}`   | Background color, e.g. `bg-red-600`          |
+| `text-[R,G,B]`         | Arbitrary RGB text, e.g. `text-[255,100,50]` |
+| `bg-[R,G,B]`           | Arbitrary RGB background                     |
 
 #### Gradients
 
 Per-character color interpolation across an element's width.
 
-| Class | Effect |
-|-------|--------|
-| `bg-gradient-to-r` | Left-to-right gradient |
-| `bg-gradient-to-l` | Right-to-left gradient |
-| `from-{color}-{shade}` | Start color |
-| `via-{color}-{shade}` | Midpoint color |
-| `to-{color}-{shade}` | End color |
+| Class                  | Effect                 |
+|------------------------|------------------------|
+| `bg-gradient-to-r`     | Left-to-right gradient |
+| `bg-gradient-to-l`     | Right-to-left gradient |
+| `from-{color}-{shade}` | Start color            |
+| `via-{color}-{shade}`  | Midpoint color         |
+| `to-{color}-{shade}`   | End color              |
 
 ```php
 render('<div class="flex">
@@ -320,8 +319,8 @@ render('<div class="flex">
 
 #### Content
 
-| Class | Effect |
-|-------|--------|
+| Class                   | Effect                         |
+|-------------------------|--------------------------------|
 | `content-repeat-[char]` | Repeat character to fill width |
 
 ### Color Mode Detection

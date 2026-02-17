@@ -22,8 +22,6 @@ class StatusMessagesCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $this->omni->titleBar('Status Messages', 'sky');
         $this->newLine();
 

@@ -24,8 +24,6 @@ class TailwindClassesCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $this->omni->titleBar('Tailwind CSS Class Reference', 'violet');
 
         $this->section('flex — Flex Container');

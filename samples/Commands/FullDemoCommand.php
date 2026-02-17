@@ -23,8 +23,6 @@ class FullDemoCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $this->omni->titleBar('Application Deployment', 'cyan');
         $this->newLine();
 
@@ -32,14 +30,14 @@ class FullDemoCommand extends Command
         $this->omni->info('Running pre-flight checks...');
         $this->newLine();
 
-        $this->omni->header('Requirement', 'Status', 'Details');
+        $this->omni->tableHeader('Requirement', 'Status', 'Details');
 
-        $this->omni->rowSuccess('PHP Version', '8.2.15');
-        $this->omni->rowSuccess('Composer', '2.7.1');
-        $this->omni->rowSuccess('Node.js', '20.11.0');
-        $this->omni->rowWarning('NPM', '10.2.4 (10.4+ recommended)');
-        $this->omni->rowSuccess('Git', '2.43.0');
-        $this->omni->rowEnabled('Production Mode');
+        $this->omni->tableRowSuccess('PHP Version', '8.2.15');
+        $this->omni->tableRowSuccess('Composer', '2.7.1');
+        $this->omni->tableRowSuccess('Node.js', '20.11.0');
+        $this->omni->tableRowWarning('NPM', '10.2.4 (10.4+ recommended)');
+        $this->omni->tableRowSuccess('Git', '2.43.0');
+        $this->omni->tableRowEnabled('Production Mode');
 
         $this->newLine();
         $this->omni->hrSuccess();
@@ -171,12 +169,12 @@ class FullDemoCommand extends Command
         $this->newLine();
 
         // Summary table
-        $this->omni->header('Metric', 'Value');
-        $this->omni->row('Total Time', '~12 seconds');
-        $this->omni->row('Files Changed', '15');
-        $this->omni->row('Migrations Run', '3');
-        $this->omni->row('Build Size', '2.4 MB');
-        $this->omni->rowSuccess('Status', 'Live');
+        $this->omni->tableHeader('Metric', 'Value');
+        $this->omni->tableRow('Total Time', '~12 seconds');
+        $this->omni->tableRow('Files Changed', '15');
+        $this->omni->tableRow('Migrations Run', '3');
+        $this->omni->tableRow('Build Size', '2.4 MB');
+        $this->omni->tableRowSuccess('Status', 'Live');
 
         return Command::SUCCESS;
     }

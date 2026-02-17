@@ -15,8 +15,6 @@ class TitleBarsCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $colors = [
             'slate', 'gray', 'zinc', 'neutral', 'stone',
             'red', 'orange', 'amber', 'yellow', 'lime',

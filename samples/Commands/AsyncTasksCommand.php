@@ -22,8 +22,6 @@ class AsyncTasksCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $this->omni->titleBar('Async Tasks', 'rose');
         $this->newLine();
 
@@ -129,10 +127,10 @@ class AsyncTasksCommand extends Command
         $this->newLine();
 
         if (! empty($result['data'])) {
-            $this->omni->header('Metric', 'Value');
-            $this->omni->row('Total', (string) $result['data']['total']);
-            $this->omni->row('Average', (string) $result['data']['average']);
-            $this->omni->row('Maximum', (string) $result['data']['max']);
+            $this->omni->tableHeader('Metric', 'Value');
+            $this->omni->tableRow('Total', (string) $result['data']['total']);
+            $this->omni->tableRow('Average', (string) $result['data']['average']);
+            $this->omni->tableRow('Maximum', (string) $result['data']['max']);
         }
 
         $this->newLine();

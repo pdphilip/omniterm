@@ -3,7 +3,7 @@
 namespace OmniTerm\Helpers;
 
 use Closure;
-use Exception;
+use InvalidArgumentException;
 use OmniTerm\Async\LiveTask;
 use OmniTerm\Async\SplitBrowser;
 use OmniTerm\AsyncHtmlRenderer;
@@ -24,6 +24,8 @@ class OmniHelpers
     public mixed $asyncLoader;
 
     public mixed $async;
+
+    private ?LiveHtmlRenderer $activeLiveRenderer = null;
 
     public string $disabledColor = 'zinc';
 
@@ -47,12 +49,45 @@ class OmniHelpers
     }
 
     // ----------------------------------------------------------------------
+    // Internal
+    // ----------------------------------------------------------------------
+
+    public function omniError(string $method, string $error, string $help = ''): never
+    {
+        render(view('omniterm::status.omni-error', ['method' => $method, 'error' => $error, 'help' => $help]));
+        exit(1);
+    }
+
+    protected function renderView(string $view, array $data = []): string
+    {
+        try {
+            return view($view, $data)->render();
+        } catch (InvalidArgumentException $e) {
+            $this->omniError($view, 'View not found', "Check that the omniterm views are published or the package is installed correctly");
+        }
+    }
+
+    protected function outputHtml(string $html): void
+    {
+        if ($this->activeLiveRenderer !== null) {
+            $this->activeLiveRenderer->write($html);
+        } else {
+            render($html);
+        }
+    }
+
+    // ----------------------------------------------------------------------
     // Inline HTML
     // ----------------------------------------------------------------------
 
+    public function view(string $view, array $data = []): void
+    {
+        $this->outputHtml($this->renderView($view, $data));
+    }
+
     public function line(string $html): void
     {
-        render($html);
+        $this->outputHtml($html);
     }
 
     public function parse(string $html): string
@@ -70,14 +105,17 @@ class OmniHelpers
         Renderer::renderUsing($renderer);
     }
 
-    public function style(string $name, ?Closure $callback = null): void
+    public function liveView(string $view = '', array $data = []): LiveHtmlRenderer
     {
-        // Custom styles not supported in OmniTerm renderer
+        $html = $view !== '' ? $this->renderView($view, $data) : '';
+        $this->activeLiveRenderer = new LiveHtmlRenderer($html);
+
+        return $this->activeLiveRenderer;
     }
 
-    public function liveRender(string $html = ''): LiveHtmlRenderer
+    public function endLiveView(): void
     {
-        return new LiveHtmlRenderer($html);
+        $this->activeLiveRenderer = null;
     }
 
     public function async(callable $task): AsyncHtmlRenderer
@@ -91,108 +129,108 @@ class OmniHelpers
 
     public function titleBar(string $title, string $color = 'sky'): void
     {
-        render(view('omniterm::elements.title-bar', ['t' => '', 'color' => $color]));
-        render(view('omniterm::elements.title-bar', ['t' => $title, 'color' => $color]));
-        render(view('omniterm::elements.title-bar', ['t' => '', 'color' => $color]));
+        $this->outputHtml($this->renderView('omniterm::elements.title-bar', ['t' => '', 'color' => $color]));
+        $this->outputHtml($this->renderView('omniterm::elements.title-bar', ['t' => $title, 'color' => $color]));
+        $this->outputHtml($this->renderView('omniterm::elements.title-bar', ['t' => '', 'color' => $color]));
     }
 
     public function box($title, $borderColor = 'text-gray', $textColor = 'text-gray'): void
     {
-        render(view('omniterm::elements.box', ['title' => $title, 'borderColor' => $borderColor, 'textColor' => $textColor, 'type' => 'square']));
+        $this->outputHtml($this->renderView('omniterm::elements.box', ['title' => $title, 'borderColor' => $borderColor, 'textColor' => $textColor, 'type' => 'square']));
     }
 
     public function roundedBox($title, $borderColor = 'text-gray', $textColor = 'text-gray'): void
     {
-        render(view('omniterm::elements.box', ['title' => $title, 'borderColor' => $borderColor, 'textColor' => $textColor, 'type' => 'rounded']));
+        $this->outputHtml($this->renderView('omniterm::elements.box', ['title' => $title, 'borderColor' => $borderColor, 'textColor' => $textColor, 'type' => 'rounded']));
     }
 
     public function hr($color = 'text-gray'): void
     {
-        render(view('omniterm::elements.hr', ['color' => $color]));
+        $this->outputHtml($this->renderView('omniterm::elements.hr', ['color' => $color]));
     }
 
     public function hrSuccess(): void
     {
-        render(view('omniterm::elements.hr', ['color' => 'text-'.$this->successColor.'-500']));
+        $this->outputHtml($this->renderView('omniterm::elements.hr', ['color' => 'text-'.$this->successColor.'-500']));
     }
 
     public function hrInfo(): void
     {
-        render(view('omniterm::elements.hr', ['color' => 'text-'.$this->infoColor.'-500']));
+        $this->outputHtml($this->renderView('omniterm::elements.hr', ['color' => 'text-'.$this->infoColor.'-500']));
     }
 
     public function hrWarning(): void
     {
-        render(view('omniterm::elements.hr', ['color' => 'text-'.$this->warningColor.'-500']));
+        $this->outputHtml($this->renderView('omniterm::elements.hr', ['color' => 'text-'.$this->warningColor.'-500']));
     }
 
     public function hrError(): void
     {
-        render(view('omniterm::elements.hr', ['color' => 'text-'.$this->errorColor.'-500']));
+        $this->outputHtml($this->renderView('omniterm::elements.hr', ['color' => 'text-'.$this->errorColor.'-500']));
     }
 
     public function hrDisabled(): void
     {
-        render(view('omniterm::elements.hr', ['color' => 'text-'.$this->disabledColor.'-500']));
+        $this->outputHtml($this->renderView('omniterm::elements.hr', ['color' => 'text-'.$this->disabledColor.'-500']));
     }
 
     // ----------------------------------------------------------------------
     // Data tables
     // ----------------------------------------------------------------------
 
-    public function header($keyName, $valueName, $detailsName = null): void
+    public function tableHeader($keyName, $valueName, $detailsName = null): void
     {
-        render(view('omniterm::elements.header-row', ['keyName' => $keyName, 'valueName' => $valueName, 'detailsName' => $detailsName]));
+        $this->outputHtml($this->renderView('omniterm::elements.header-row', ['keyName' => $keyName, 'valueName' => $valueName, 'detailsName' => $detailsName]));
     }
 
-    public function row($key, $value, $details = null, $valueClass = null, $help = []): void
+    public function tableRow($key, $value, $details = null, $valueClass = null, $help = []): void
     {
-        render(view('omniterm::elements.data-row', ['key' => $key, 'value' => $value, 'details' => $details, 'help' => $help, 'class' => $valueClass, 'statusColors' => $this->statusColors()]));
+        $this->outputHtml($this->renderView('omniterm::elements.data-row', ['key' => $key, 'value' => $value, 'details' => $details, 'help' => $help, 'class' => $valueClass, 'statusColors' => $this->statusColors()]));
     }
 
-    public function rowSuccess($key, $details = null, $help = []): void
+    public function tableRowSuccess($key, $details = null, $help = []): void
     {
-        $this->rowAsStatus($key, 'success', $details, $help);
+        $this->tableRowAsStatus($key, 'success', $details, $help);
     }
 
-    public function rowEnabled($key, $details = null, $help = []): void
+    public function tableRowEnabled($key, $details = null, $help = []): void
     {
-        $this->rowAsStatus($key, 'enabled', $details, $help);
+        $this->tableRowAsStatus($key, 'enabled', $details, $help);
     }
 
-    public function rowDisabled($key, $details = null, $help = []): void
+    public function tableRowDisabled($key, $details = null, $help = []): void
     {
-        $this->rowAsStatus($key, 'disabled', $details, $help);
+        $this->tableRowAsStatus($key, 'disabled', $details, $help);
     }
 
-    public function rowWarning($key, $details = null, $help = []): void
+    public function tableRowWarning($key, $details = null, $help = []): void
     {
-        $this->rowAsStatus($key, 'warning', $details, $help);
+        $this->tableRowAsStatus($key, 'warning', $details, $help);
     }
 
-    public function rowError($key, $details = null, $help = []): void
+    public function tableRowError($key, $details = null, $help = []): void
     {
-        $this->rowAsStatus($key, 'error', $details, $help);
+        $this->tableRowAsStatus($key, 'error', $details, $help);
     }
 
-    public function rowInfo($key, $details = null, $help = []): void
+    public function tableRowInfo($key, $details = null, $help = []): void
     {
-        $this->rowAsStatus($key, 'info', $details, $help);
+        $this->tableRowAsStatus($key, 'info', $details, $help);
     }
 
-    public function rowOk($key, $details = null, $help = []): void
+    public function tableRowOk($key, $details = null, $help = []): void
     {
-        $this->rowAsStatus($key, 'ok', $details, $help);
+        $this->tableRowAsStatus($key, 'ok', $details, $help);
     }
 
-    public function rowFailed($key, $details = null, $help = []): void
+    public function tableRowFailed($key, $details = null, $help = []): void
     {
-        $this->rowAsStatus($key, 'failed', $details, $help);
+        $this->tableRowAsStatus($key, 'failed', $details, $help);
     }
 
-    public function rowAsStatus($key, $status, $details = null, $help = []): void
+    public function tableRowAsStatus($key, $status, $details = null, $help = []): void
     {
-        render(view('omniterm::elements.data-row-status', ['key' => $key, 'status' => $status, 'details' => $details, 'help' => $help, 'statusColors' => $this->statusColors()]));
+        $this->outputHtml($this->renderView('omniterm::elements.data-row-status', ['key' => $key, 'status' => $status, 'details' => $details, 'help' => $help, 'statusColors' => $this->statusColors()]));
     }
 
     // ----------------------------------------------------------------------
@@ -201,7 +239,7 @@ class OmniHelpers
 
     public function ask($question, $options = []): mixed
     {
-        return ask(view('omniterm::elements.question', ['question' => $question, 'options' => $options]), $options);
+        return ask($this->renderView('omniterm::elements.question', ['question' => $question, 'options' => $options]), $options);
     }
 
     // ----------------------------------------------------------------------
@@ -251,27 +289,27 @@ class OmniHelpers
 
     public function error($message): void
     {
-        render(view('omniterm::status.error', ['message' => $message, 'color' => $this->errorColor]));
+        $this->outputHtml($this->renderView('omniterm::status.error', ['message' => $message, 'color' => $this->errorColor]));
     }
 
     public function success($message = 'ok'): void
     {
-        render(view('omniterm::status.success', ['message' => $message, 'color' => $this->successColor]));
+        $this->outputHtml($this->renderView('omniterm::status.success', ['message' => $message, 'color' => $this->successColor]));
     }
 
     public function warning($message): void
     {
-        render(view('omniterm::status.warning', ['message' => $message, 'color' => $this->warningColor]));
+        $this->outputHtml($this->renderView('omniterm::status.warning', ['message' => $message, 'color' => $this->warningColor]));
     }
 
     public function info($message): void
     {
-        render(view('omniterm::status.info', ['message' => $message], ['color' => $this->infoColor]));
+        $this->outputHtml($this->renderView('omniterm::status.info', ['message' => $message], ['color' => $this->infoColor]));
     }
 
     public function disabled($message): void
     {
-        render(view('omniterm::status.disabled', ['message' => $message], ['color' => $this->disabledColor]));
+        $this->outputHtml($this->renderView('omniterm::status.disabled', ['message' => $message], ['color' => $this->disabledColor]));
     }
 
     // ----------------------------------------------------------------------
@@ -280,7 +318,7 @@ class OmniHelpers
 
     public function status(string $status, string $title, string $details, array $help = []): void
     {
-        render(view('omniterm::status.custom', ['status' => $status, 'title' => $title, 'details' => $details, 'help' => $help, 'statusColors' => $this->statusColors()]));
+        $this->outputHtml($this->renderView('omniterm::status.custom', ['status' => $status, 'title' => $title, 'details' => $details, 'help' => $help, 'statusColors' => $this->statusColors()]));
     }
 
     public function statusSuccess(string $title, string $details, array $help = []): void
@@ -312,9 +350,6 @@ class OmniHelpers
     // Progress bars
     // ----------------------------------------------------------------------
 
-    /**
-     * @throws Exception
-     */
     public function createProgressBar($total, $withColors = true)
     {
         if ($withColors) {
@@ -332,6 +367,12 @@ class OmniHelpers
         $this->progressInstance->setTotal($total);
     }
 
+    public function createGradientFramedProgressBar($total)
+    {
+        $this->progressInstance = new ProgressBar('gradient-framed');
+        $this->progressInstance->setTotal($total);
+    }
+
     public function createSimpleProgressBar($total, $withColors = true)
     {
         if ($withColors) {
@@ -342,35 +383,26 @@ class OmniHelpers
         $this->progressInstance->setTotal($total);
     }
 
-    /**
-     * @throws Exception
-     */
     public function showProgress(): void
     {
         if (empty($this->progressInstance)) {
-            throw new Exception('No progress bar instance found');
+            $this->omniError('showProgress()', 'No progress bar instance found', 'Call createProgressBar() first');
         }
         $this->progressInstance->show();
     }
 
-    /**
-     * @throws Exception
-     */
     public function progressAdvance($by = 1): void
     {
         if (empty($this->progressInstance)) {
-            throw new Exception('No progress bar instance found');
+            $this->omniError('progressAdvance()', 'No progress bar instance found', 'Call createProgressBar() first');
         }
         $this->progressInstance->increment($by);
     }
 
-    /**
-     * @throws Exception
-     */
     public function progressFinish(): void
     {
         if (empty($this->progressInstance)) {
-            throw new Exception('No progress bar instance found');
+            $this->omniError('progressFinish()', 'No progress bar instance found', 'Call createProgressBar() first');
         }
         $this->progressInstance->finish();
     }
@@ -407,17 +439,17 @@ class OmniHelpers
     public function runTask($title, $task): mixed
     {
         if (empty($this->async)) {
-            throw new Exception('No loader instance found');
+            $this->omniError('runTask()','No loader instance found', 'Call newLoader() first');
         }
         $async = $this->asyncLoader;
         $async->withTask($task);
-        $async->withFailOver(view($this->async['view'], [
+        $async->withFailOver($this->renderView($this->async['view'], [
             'state' => 'failover',
             'message' => $title,
             'i' => 1,
         ]));
         $result = $async->run(function () use ($async, $title) {
-            $async->render(view($this->async['view'], [
+            $async->render($this->renderView($this->async['view'], [
                 'state' => 'running',
                 'type' => $this->async['type'],
                 'colors' => $this->async['colors'],
@@ -426,7 +458,7 @@ class OmniHelpers
             ]));
         }, $this->async['us']);
         if (empty($result)) {
-            $async->render(view($this->async['view'], [
+            $async->render($this->renderView($this->async['view'], [
                 'state' => 'error',
                 'type' => $this->async['type'],
                 'colors' => $this->async['colors'],
@@ -449,7 +481,7 @@ class OmniHelpers
         if (! empty($result['details'])) {
             $details = $result['details'];
         }
-        $async->render(view($this->async['view'], [
+        $async->render($this->renderView($this->async['view'], [
             'state' => $state,
             'type' => $this->async['type'],
             'colors' => $this->async['colors'],

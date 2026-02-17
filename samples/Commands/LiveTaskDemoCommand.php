@@ -15,8 +15,6 @@ class LiveTaskDemoCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $this->omni->titleBar('Live Tasks', 'fuchsia');
         $this->newLine();
 

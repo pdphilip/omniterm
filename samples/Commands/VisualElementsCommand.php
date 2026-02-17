@@ -22,8 +22,6 @@ class VisualElementsCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $this->omni->titleBar('Visual Elements', 'violet');
         $this->newLine();
 
@@ -88,9 +86,9 @@ class VisualElementsCommand extends Command
 
         // Combined example
         $this->omni->roundedBox('Section Title', 'text-sky-500', 'text-white');
-        $this->omni->row('Item 1', 'Value 1');
-        $this->omni->row('Item 2', 'Value 2');
-        $this->omni->row('Item 3', 'Value 3');
+        $this->omni->tableRow('Item 1', 'Value 1');
+        $this->omni->tableRow('Item 2', 'Value 2');
+        $this->omni->tableRow('Item 3', 'Value 3');
         $this->omni->hrInfo();
 
         return Command::SUCCESS;

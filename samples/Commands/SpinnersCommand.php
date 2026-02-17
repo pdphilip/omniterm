@@ -22,8 +22,6 @@ class SpinnersCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $this->omni->titleBar('Spinner Animations', 'amber');
         $this->newLine();
 

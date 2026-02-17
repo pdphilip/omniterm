@@ -22,8 +22,6 @@ class CustomColorsCommand extends Command
 
     public function handle(): int
     {
-        $this->initOmni();
-
         $this->omni->titleBar('Custom Colors', 'pink');
         $this->newLine();
 
@@ -85,12 +83,12 @@ class CustomColorsCommand extends Command
         $this->omni->info('Status rows inherit custom colors:');
         $this->newLine();
 
-        $this->omni->header('Check', 'Status');
-        $this->omni->rowSuccess('Teal Success');
-        $this->omni->rowError('Red Error');
-        $this->omni->rowWarning('Orange Warning');
-        $this->omni->rowInfo('Cyan Info');
-        $this->omni->rowDisabled('Gray Disabled');
+        $this->omni->tableHeader('Check', 'Status');
+        $this->omni->tableRowSuccess('Teal Success');
+        $this->omni->tableRowError('Red Error');
+        $this->omni->tableRowWarning('Orange Warning');
+        $this->omni->tableRowInfo('Cyan Info');
+        $this->omni->tableRowDisabled('Gray Disabled');
 
         $this->newLine();
 

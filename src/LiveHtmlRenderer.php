@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OmniTerm;
 
+use OmniTerm\Rendering\Ansi;
 use OmniTerm\Rendering\Renderer;
-use Symfony\Component\Console\Cursor;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Terminal;
@@ -15,9 +15,6 @@ use Symfony\Component\Console\Terminal;
  */
 final class LiveHtmlRenderer
 {
-    /**
-     * Renders the given html and creates a new Live instance
-     */
     public ?string $currentMessage = null;
 
     protected int $options = OutputInterface::OUTPUT_NORMAL;
@@ -26,20 +23,17 @@ final class LiveHtmlRenderer
 
     private OutputInterface $output;
 
-    private Cursor $cursor;
-
     private int $width;
 
-    private int $startingRow = 0;
+    private int $liveRows = 0;
 
-    private int $endingRow = 0;
+    private int $belowRows = 0;
 
     public function __construct(?string $html = null, int $options = OutputInterface::OUTPUT_NORMAL)
     {
         $this->output = new ConsoleOutput;
         $this->renderer = new Renderer;
         $this->options = $options;
-        $this->cursor = new Cursor($this->output);
         $this->width = (new Terminal)->getWidth();
         if ($html !== null) {
             $this->reRender($html);
@@ -54,6 +48,24 @@ final class LiveHtmlRenderer
     public function newLine(int $count = 1): void
     {
         $this->output->write(str_repeat(\PHP_EOL, $count));
+        $this->belowRows += $count;
+    }
+
+    public function write(string $html): void
+    {
+        $message = $this->renderer->parse($html)->toString();
+        $this->output->writeln($message, $this->options);
+        $this->belowRows += substr_count($message, "\n") + 1;
+    }
+
+    public function writeView(string $view, array $data = []): void
+    {
+        $this->write(view($view, $data)->render());
+    }
+
+    public function reRenderView(string $view, array $data = []): void
+    {
+        $this->reRender(view($view, $data)->render());
     }
 
     public function reRender(string $html): void
@@ -62,56 +74,38 @@ final class LiveHtmlRenderer
         if ($message === $this->currentMessage) {
             return;
         }
-        $this->cursor->hide();
-        $previousMessage = $this->currentMessage;
-        if ($previousMessage === null) {
-            $this->captureFirstRow();
+
+        $this->output->write(Ansi::hideCursor());
+        $newRows = substr_count($message, "\n") + 1;
+
+        if ($this->currentMessage !== null && $this->liveRows > 0) {
+            $totalUp = $this->liveRows + $this->belowRows;
+            $this->output->write(Ansi::moveUp($totalUp));
+            $this->clearLines($this->liveRows);
         }
-        if ($previousMessage !== null) {
-            if (strlen($previousMessage) > strlen($message)) {
-                $this->clearPrevious();
-            }
-            $this->cursor->moveToPosition(1, $this->startingRow);
-        }
+
         $this->currentMessage = $message;
-        $this->renderer->parse($html)->render($this->options);
-        $this->setEndRow($message);
+        $this->liveRows = $newRows;
+        $this->output->writeln($message, $this->options);
 
-    }
-
-    // ----------------------------------------------------------------------
-    // Private Methods
-    // ----------------------------------------------------------------------
-    private function setEndRow(?string $message): void
-    {
-        $this->endingRow = $this->cursor->getCurrentPosition()[1];
-        $rows = $this->calculateMessageRows($message);
-        $moveUp = $rows + 1;
-        $this->startingRow = $this->endingRow - $moveUp;
-    }
-
-    private function captureFirstRow(): void
-    {
-        $this->startingRow = $this->cursor->getCurrentPosition()[1];
-    }
-
-    private function calculateMessageRows(?string $message): int
-    {
-        if ($message !== null) {
-            return count(explode("\n", $message));
+        if ($this->belowRows > 0) {
+            $this->output->write(Ansi::moveDown($this->belowRows));
         }
 
-        return 0;
+        $this->output->write(Ansi::showCursor());
     }
 
-    private function clearPrevious(): void
+    private function clearLines(int $count): void
     {
-        $this->cursor->moveToPosition(1, $this->endingRow);
-        $rows = $this->endingRow - $this->startingRow;
-        for ($i = 0; $i < $rows; $i++) {
-            $this->cursor->moveUp();
-            $this->cursor->clearLine();
+        for ($i = 0; $i < $count; $i++) {
+            $this->output->write(Ansi::eraseLine());
+            if ($i < $count - 1) {
+                $this->output->write(Ansi::moveDown());
+            }
         }
-
+        if ($count > 1) {
+            $this->output->write(Ansi::moveUp($count - 1));
+        }
+        $this->output->write(Ansi::carriageReturn());
     }
 }

@@ -20,7 +20,7 @@ class ProgressBar
     protected $screenWidth = 0;
 
     protected static $types = [
-        'framed', 'framed-color', 'simple', 'simple-color', 'gradient',
+        'framed', 'framed-color', 'simple', 'simple-color', 'gradient', 'gradient-framed',
     ];
 
     public function __construct($type)
