@@ -85,6 +85,16 @@ class AsyncTasksCommand extends Command
             ];
         });
 
+        $result = $this->omni->runTask('Connecting to external API', function () {
+            usleep(2500000); // 2.5 seconds
+
+            return [
+                'state' => 'error',
+                'message' => 'API connection failed',
+                'details' => 'Timeout after 30s',
+            ];
+        });
+
         usleep(300000);
 
         // Task 5: Long running task with progress spinner
@@ -126,11 +136,11 @@ class AsyncTasksCommand extends Command
 
         $this->newLine();
 
-        if (! empty($result['data'])) {
+        if ($result && ! empty($result->data)) {
             $this->omni->tableHeader('Metric', 'Value');
-            $this->omni->tableRow('Total', (string) $result['data']['total']);
-            $this->omni->tableRow('Average', (string) $result['data']['average']);
-            $this->omni->tableRow('Maximum', (string) $result['data']['max']);
+            $this->omni->tableRow('Total', (string) $result->data['total']);
+            $this->omni->tableRow('Average', (string) $result->data['average']);
+            $this->omni->tableRow('Maximum', (string) $result->data['max']);
         }
 
         $this->newLine();

@@ -3,54 +3,40 @@
 namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
+use OmniTerm\OmniTerm;
 
-use function OmniTerm\liveRender;
-use function OmniTerm\render;
-use function OmniTerm\terminal;
-
-/**
- * Sample: Global Functions
- *
- * Demonstrates using OmniTerm's global functions without the trait.
- *
- * Run: php artisan omniterm:global-functions
- */
 class GlobalFunctionsCommand extends Command
 {
+    use OmniTerm;
+
     protected $signature = 'omniterm:global-functions';
 
-    protected $description = 'OmniTerm Sample: Global Helper Functions';
+    protected $description = 'OmniTerm Sample: Render & Live View Functions';
 
     public function handle(): int
     {
-        // Terminal info
-        $width = terminal()->getWidth();
-        $height = terminal()->getHeight();
+        $width = $this->omni->terminal()->getWidth();
+        $height = $this->omni->terminal()->getHeight();
 
-        render(view('omniterm::elements.title-bar', ['t' => '', 'color' => 'cyan']));
-        render(view('omniterm::elements.title-bar', ['t' => 'Global Functions', 'color' => 'cyan']));
-        render(view('omniterm::elements.title-bar', ['t' => '', 'color' => 'cyan']));
+        $this->omni->titleBar('Render Functions', 'cyan');
         $this->newLine();
 
-        // Terminal dimensions
-        render('<div class="mx-1"><span class="text-amber-500">Terminal Size:</span> '.$width.' x '.$height.'</div>');
+        $this->omni->line('<div class="mx-1"><span class="text-amber-500">Terminal Size:</span> '.$width.' x '.$height.'</div>');
         $this->newLine();
 
-        // render() - Basic HTML rendering
-        render('<div class="mx-1 text-sky-500">1. render() - Basic HTML to terminal:</div>');
+        $this->omni->line('<div class="mx-1 text-sky-500">1. line() - Basic HTML to terminal:</div>');
         $this->newLine();
 
-        render('<div class="mx-2 text-green-500 font-bold">  Bold green text</div>');
-        render('<div class="mx-2"><span class="bg-red-600 text-white px-1">ERROR</span> With a badge</div>');
-        render('<div class="mx-2"><span class="text-yellow-500">Warning:</span> <span class="text-gray">Some message</span></div>');
+        $this->omni->line('<div class="mx-2 text-green-500 font-bold">  Bold green text</div>');
+        $this->omni->line('<div class="mx-2"><span class="bg-red-600 text-white px-1">ERROR</span> With a badge</div>');
+        $this->omni->line('<div class="mx-2"><span class="text-yellow-500">Warning:</span> <span class="text-gray">Some message</span></div>');
 
         $this->newLine();
 
-        // Flexbox layout
-        render('<div class="mx-1 text-sky-500">2. render() - Flexbox layouts:</div>');
+        $this->omni->line('<div class="mx-1 text-sky-500">2. line() - Flexbox layouts:</div>');
         $this->newLine();
 
-        render('
+        $this->omni->line('
             <div class="flex mx-2">
                 <span class="text-emerald-500">Left</span>
                 <span class="flex-1 text-center text-amber-500">Center</span>
@@ -60,7 +46,7 @@ class GlobalFunctionsCommand extends Command
 
         $this->newLine();
 
-        render('
+        $this->omni->line('
             <div class="flex mx-2">
                 <span class="font-bold">Status</span>
                 <span class="flex-1 content-repeat-[.] text-gray"></span>
@@ -70,27 +56,26 @@ class GlobalFunctionsCommand extends Command
 
         $this->newLine();
 
-        // liveRender() - Live updating display
-        render('<div class="mx-1 text-sky-500">3. liveRender() - Live updating display:</div>');
+        $this->omni->line('<div class="mx-1 text-sky-500">3. liveView() - Live updating display:</div>');
         $this->newLine();
 
-        $live = liveRender('<div class="mx-2">  Countdown: <span class="text-amber-500">Starting...</span></div>');
+        $live = $this->omni->liveView('<div class="mx-2">  Countdown: <span class="text-amber-500">Starting...</span></div>');
 
         for ($i = 5; $i >= 0; $i--) {
-            usleep(500000); // 500ms
+            usleep(500000);
             $color = $i > 2 ? 'text-amber-500' : 'text-rose-500';
             $live->reRender("<div class=\"mx-2\">  Countdown: <span class=\"{$color} font-bold\">{$i}</span></div>");
         }
 
         $live->reRender('<div class="mx-2">  Countdown: <span class="text-emerald-500 font-bold">Done!</span></div>');
+        $this->omni->endLiveView();
 
         $this->newLine();
 
-        // Progress with liveRender
-        render('<div class="mx-1 text-sky-500">4. liveRender() - Custom progress:</div>');
+        $this->omni->line('<div class="mx-1 text-sky-500">4. liveView() - Custom progress:</div>');
         $this->newLine();
 
-        $live = liveRender();
+        $live = $this->omni->liveView();
 
         for ($i = 0; $i <= 20; $i++) {
             $filled = str_repeat('█', $i);
@@ -112,14 +97,14 @@ class GlobalFunctionsCommand extends Command
                 </div>
             ");
 
-            usleep(100000); // 100ms
+            usleep(100000);
         }
 
+        $this->omni->endLiveView();
         $this->newLine();
 
-        // Summary
-        render('<div class="mx-1 text-gray">────────────────────────────────────</div>');
-        render('<div class="mx-1 text-emerald-500 font-bold">Global functions demo complete!</div>');
+        $this->omni->line('<div class="mx-1 text-gray">────────────────────────────────────</div>');
+        $this->omni->line('<div class="mx-1 text-emerald-500 font-bold">Render functions demo complete!</div>');
 
         return Command::SUCCESS;
     }

@@ -17,6 +17,8 @@
     ],
     "require": {
         "php": "^8.2",
+        "ext-dom": "*",
+        "ext-libxml": "*",
         "illuminate/contracts": "^10.0||^11.0||^12.0",
         "laravel/prompts": "^0.1.18||^0.2||^0.3",
         "spatie/laravel-package-tools": "^1.16",
@@ -37,10 +39,7 @@
     "autoload": {
         "psr-4": {
             "OmniTerm\\": "src/"
-        },
-        "files": [
-            "src/Functions.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {

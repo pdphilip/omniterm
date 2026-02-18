@@ -30,9 +30,10 @@ class LiveTask
         $this->async = new AsyncHtmlRenderer(function () {});
     }
 
-    public function row(string $label, mixed $value = 0, string $color = ''): static
+    public function row(string $label, mixed $value = 0, string $color = '', string $details = ''): static
     {
         $this->rows[$label] = [
+            'details' => $details,
             'value' => $value,
             'color' => $color,
         ];
@@ -54,6 +55,27 @@ class LiveTask
         $this->renderState('running', 1);
 
         return $result;
+    }
+
+    public function runTask(callable $task): TaskResult|false
+    {
+        $result = $this->run($task);
+
+        if (empty($result)) {
+            $this->finishWithError($this->title.' failed');
+
+            return false;
+        }
+
+        $taskResult = TaskResult::fromArray($result, $this->title.' completed');
+
+        match ($taskResult->state) {
+            'error' => $this->finishWithError($taskResult->message),
+            'warning' => $this->finishWithWarning($taskResult->message),
+            default => $this->finish($taskResult->message),
+        };
+
+        return $taskResult;
     }
 
     public function get(string $label): mixed

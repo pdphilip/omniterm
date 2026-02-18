@@ -5,176 +5,210 @@ namespace OmniTerm\Samples;
 use Illuminate\Console\Command;
 use OmniTerm\OmniTerm;
 
-/**
- * Sample: Full Demo
- *
- * A complete example showing multiple OmniTerm features working together.
- * Simulates a deployment process.
- *
- * Run: php artisan omniterm:full-demo
- */
 class FullDemoCommand extends Command
 {
     use OmniTerm;
 
     protected $signature = 'omniterm:full-demo';
 
-    protected $description = 'OmniTerm Sample: Full Feature Demo (Simulated Deployment)';
+    protected $description = 'OmniTerm: One of every feature';
 
     public function handle(): int
     {
-        $this->omni->titleBar('Application Deployment', 'cyan');
+        // ── Title Bar ──────────────────────────────────────────────────────
+        $this->omni->titleBar('OmniTerm Feature Check', 'cyan');
         $this->newLine();
 
-        // Pre-flight checks
-        $this->omni->info('Running pre-flight checks...');
-        $this->newLine();
+        // ── Inline HTML ────────────────────────────────────────────────────
+        $this->omni->render('<div class="px-2"><span class="text-sky-400 font-bold">render()</span> <span class="text-gray-400">— raw HTML to ANSI</span></div>');
 
-        $this->omni->tableHeader('Requirement', 'Status', 'Details');
-
-        $this->omni->tableRowSuccess('PHP Version', '8.2.15');
-        $this->omni->tableRowSuccess('Composer', '2.7.1');
-        $this->omni->tableRowSuccess('Node.js', '20.11.0');
-        $this->omni->tableRowWarning('NPM', '10.2.4 (10.4+ recommended)');
-        $this->omni->tableRowSuccess('Git', '2.43.0');
-        $this->omni->tableRowEnabled('Production Mode');
+        $parsed = $this->omni->parse('<span class="text-emerald-400">parse()</span> returns a string');
+        $this->omni->render('<div class="px-2"><span>'.$parsed.'</span></div>');
 
         $this->newLine();
+
+        // ── Feedback Messages ──────────────────────────────────────────────
+        $this->omni->success('Success message');
+        $this->omni->info('Info message');
+        $this->omni->warning('Warning message');
+        $this->omni->error('Error message');
+        $this->omni->disabled('Disabled message');
+
+        $this->newLine();
+
+        // ── Elements ───────────────────────────────────────────────────────
+        $this->omni->box('Square Box', 'text-sky-500', 'text-sky-300');
+        $this->omni->roundedBox('Rounded Box', 'text-emerald-500', 'text-emerald-300');
+
+        $this->newLine();
+
+        $this->omni->hr();
         $this->omni->hrSuccess();
-        $this->newLine();
-
-        // Pull latest code
-        $this->omni->newLoader('dots', ['text-sky-500', 'text-cyan-500']);
-
-        $this->omni->runTask('Pulling latest code from repository', function () {
-            usleep(1500000);
-
-            return [
-                'state' => 'success',
-                'message' => 'Code updated',
-                'details' => '15 files changed',
-            ];
-        });
-
-        // Install dependencies
-        $this->omni->newLoader('sand', ['text-amber-500', 'text-yellow-500']);
-
-        $this->omni->runTask('Installing Composer dependencies', function () {
-            usleep(2000000);
-
-            return [
-                'state' => 'success',
-                'message' => 'Dependencies installed',
-                'details' => '124 packages',
-            ];
-        });
-
-        $this->omni->newLoader('dots', ['text-emerald-500', 'text-teal-500']);
-
-        $this->omni->runTask('Installing NPM dependencies', function () {
-            usleep(1800000);
-
-            return [
-                'state' => 'success',
-                'message' => 'NPM packages installed',
-                'details' => '847 packages',
-            ];
-        });
+        $this->omni->hrInfo();
+        $this->omni->hrWarning();
+        $this->omni->hrError();
+        $this->omni->hrDisabled();
 
         $this->newLine();
 
-        // Build assets with progress bar
-        $this->omni->info('Building frontend assets...');
+        // ── Data Tables ────────────────────────────────────────────────────
+        $this->omni->tableHeader('Check', 'Status', 'Details');
+        $this->omni->tableRow('Plain Row', 'value', 'details');
+        $this->omni->tableRowSuccess('PHP 8.3', '8.3.15');
+        $this->omni->tableRowInfo('Laravel', '12.x');
+        $this->omni->tableRowWarning('NPM', '10.2 (10.4+ recommended)');
+        $this->omni->tableRowError('Redis', 'Connection refused');
+        $this->omni->tableRowEnabled('Debug Mode');
+        $this->omni->tableRowDisabled('Maintenance');
+        $this->omni->tableRowOk('Health Check');
+        $this->omni->tableRowFailed('Queue Worker', 'Not running');
+
         $this->newLine();
 
-        $this->omni->createProgressBar(100, withColors: true);
+        // ── Status Blocks ──────────────────────────────────────────────────
+        $this->omni->statusSuccess('Build Passed', 'All 42 tests green', ['Duration: 0.31s']);
+        $this->omni->statusInfo('Update Available', 'v5.4.0 released', ['Run: composer update']);
+        $this->omni->statusWarning('Cache Stale', 'Last refresh 2 hours ago', ['Run: php artisan cache:clear']);
+        $this->omni->statusError('Deploy Failed', 'Migration error on users table', ['Check: storage/logs/laravel.log']);
+        $this->omni->statusDisabled('Cron Inactive', 'Scheduler not running', ['Run: php artisan schedule:work']);
+
+        $this->newLine();
+
+        // ── Progress Bars ──────────────────────────────────────────────────
+        $this->omni->info('Progress bars');
+        $this->newLine();
+
+        $total = 50;
+        $sleep = 50_000;
+
+        // Framed with colors
+        $this->omni->divider('Framed with colors');
+        $this->omni->createProgressBar($total, withColors: true);
         $this->omni->showProgress();
-
-        // Simulate build steps
-        $steps = [
-            10 => 'Compiling TypeScript',
-            25 => 'Processing SCSS',
-            45 => 'Bundling JavaScript',
-            65 => 'Optimizing images',
-            80 => 'Generating source maps',
-            95 => 'Minifying output',
-            100 => 'Build complete',
-        ];
-
-        $current = 0;
-        foreach ($steps as $target => $step) {
-            while ($current < $target) {
-                usleep(30000);
-                $current++;
-                $this->omni->progressAdvance();
-            }
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $this->omni->progressAdvance();
         }
-
         $this->omni->progressFinish();
         $this->newLine();
 
-        // Run migrations
-        $this->omni->newLoader('material', ['text-indigo-500', 'text-violet-500']);
+        // Framed without colors
+        $this->omni->divider('Framed without colors');
+        $this->omni->createProgressBar($total, withColors: false);
+        $this->omni->showProgress();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $this->omni->progressAdvance();
+        }
+        $this->omni->progressFinish();
+        $this->newLine();
+        // Simple with colors
+        $this->omni->divider('Simple with colors');
+        $this->omni->createSimpleProgressBar($total, withColors: true);
+        $this->omni->showProgress();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $this->omni->progressAdvance();
+        }
+        $this->omni->progressFinish();
+        $this->newLine();
 
-        $this->omni->runTask('Running database migrations', function () {
-            usleep(1200000);
+        // Simple without colors
+        $this->omni->divider('Simple without colors');
+        $this->omni->createSimpleProgressBar($total, withColors: false);
+        $this->omni->showProgress();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $this->omni->progressAdvance();
+        }
+        $this->omni->progressFinish();
+        $this->newLine();
 
-            return [
-                'state' => 'success',
-                'message' => 'Migrations complete',
-                'details' => '3 new migrations',
-            ];
+        // Gradient
+        $this->omni->divider('Gradient');
+        $this->omni->createGradientProgressBar($total);
+        $this->omni->showProgress();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $this->omni->progressAdvance();
+        }
+        $this->omni->progressFinish();
+        $this->newLine();
+
+        // Gradient framed
+        $this->omni->divider('Gradient Framed');
+        $this->omni->createGradientFramedProgressBar($total);
+        $this->omni->showProgress();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $this->omni->progressAdvance();
+        }
+        $this->omni->progressFinish();
+        $this->newLine();
+
+        // ── Spinner Tasks (newLoader + runTask) ────────────────────────────
+        $this->omni->info('Spinner tasks');
+        $this->newLine();
+
+        $this->omni->newLoader('sand', ['text-amber-500', 'text-emerald-500']);
+        $this->omni->runTask('Task with success', function () {
+            usleep(1_000_000);
+
+            return ['state' => 'success', 'message' => 'Completed', 'details' => '128 records'];
         });
 
-        // Clear caches
-        $this->omni->newLoader('dotsCircle', ['text-rose-500', 'text-pink-500']);
+        $this->omni->newLoader('dots', ['text-rose-500', 'text-pink-500']);
+        $this->omni->runTask('Task with warning', function () {
+            usleep(1_000_000);
 
-        $this->omni->runTask('Clearing application caches', function () {
-            usleep(800000);
-
-            return [
-                'state' => 'success',
-                'message' => 'Caches cleared',
-            ];
+            return ['state' => 'warning', 'message' => 'Partial completion', 'details' => '3 skipped'];
         });
 
-        // Optimize
-        $this->omni->newLoader('progress', ['text-emerald-500']);
+        $this->omni->newLoader('material', ['text-sky-500', 'text-cyan-500']);
+        $this->omni->runTask('Task with error', function () {
+            usleep(1_000_000);
 
-        $this->omni->runTask('Optimizing application', function () {
-            usleep(1000000);
-
-            return [
-                'state' => 'success',
-                'message' => 'Application optimized',
-                'details' => 'Config, routes, views cached',
-            ];
+            return ['state' => 'error', 'message' => 'Connection timeout', 'details' => 'After 30s'];
         });
 
         $this->newLine();
-        $this->omni->hrSuccess();
+
+        // ── LiveTask via task() ────────────────────────────────────────────
+        $this->omni->info('LiveTask via task()');
         $this->newLine();
 
-        // Final status
-        $this->omni->statusSuccess(
-            'Deployment Complete',
-            'Application successfully deployed to production',
-            [
-                'Version: v2.4.1',
-                'Deployed at: '.date('Y-m-d H:i:s'),
-                'Visit: https://myapp.com',
-            ]
-        );
+        $this->omni->task('Processing batch job', function () {
+            usleep(1_500_000);
+
+            return ['state' => 'success', 'message' => 'Batch complete', 'details' => '500 records'];
+        }, 'dotsCircle', ['text-indigo-500', 'text-violet-500']);
 
         $this->newLine();
 
-        // Summary table
-        $this->omni->tableHeader('Metric', 'Value');
-        $this->omni->tableRow('Total Time', '~12 seconds');
-        $this->omni->tableRow('Files Changed', '15');
-        $this->omni->tableRow('Migrations Run', '3');
-        $this->omni->tableRow('Build Size', '2.4 MB');
-        $this->omni->tableRowSuccess('Status', 'Live');
+        // ── Manual LiveTask with rows ──────────────────────────────────────
+        $this->omni->info('Manual LiveTask with rows');
+        $this->newLine();
+
+        $liveTask = $this->omni->liveTask('Syncing data', 'sand', ['text-sky-500', 'text-emerald-500']);
+        $liveTask->row('Users', 0, 'text-sky-500');
+        $liveTask->row('Orders', 0, 'text-emerald-500');
+        $liveTask->row('Products', 0, 'text-amber-500');
+
+        $liveTask->run(function () use ($liveTask) {
+            for ($i = 1; $i <= 5; $i++) {
+                usleep(300_000);
+                $liveTask->increment('Users', rand(10, 50));
+                $liveTask->increment('Orders', rand(5, 20));
+                $liveTask->increment('Products', rand(2, 10));
+            }
+
+            return ['state' => 'success', 'message' => 'Sync complete'];
+        });
+
+        $liveTask->finish('Sync complete');
+
+        $this->newLine();
+        $this->omni->success('Feature check complete');
 
         return Command::SUCCESS;
     }

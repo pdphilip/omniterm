@@ -5,25 +5,24 @@ namespace OmniTerm\Helpers;
 use Closure;
 use InvalidArgumentException;
 use OmniTerm\Async\LiveTask;
+use OmniTerm\Async\SpinnerTask;
 use OmniTerm\Async\SplitBrowser;
+use OmniTerm\Async\TaskResult;
 use OmniTerm\AsyncHtmlRenderer;
 use OmniTerm\LiveHtmlRenderer;
 use OmniTerm\Rendering\Renderer;
 use OmniTerm\Rendering\Terminal;
+use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
-
-use function OmniTerm\ask;
-use function OmniTerm\asyncFunction;
-use function OmniTerm\parse;
-use function OmniTerm\render;
+use Symfony\Component\Console\Question\Question;
 
 class OmniHelpers
 {
     public mixed $progressInstance;
 
-    public mixed $asyncLoader;
-
-    public mixed $async;
+    protected ?SpinnerTask $spinnerTask = null;
 
     private ?LiveHtmlRenderer $activeLiveRenderer = null;
 
@@ -54,7 +53,7 @@ class OmniHelpers
 
     public function omniError(string $method, string $error, string $help = ''): never
     {
-        render(view('omniterm::status.omni-error', ['method' => $method, 'error' => $error, 'help' => $help]));
+        (new Renderer)->render((string) view('omniterm::status.omni-error', ['method' => $method, 'error' => $error, 'help' => $help]));
         exit(1);
     }
 
@@ -63,7 +62,7 @@ class OmniHelpers
         try {
             return view($view, $data)->render();
         } catch (InvalidArgumentException $e) {
-            $this->omniError($view, 'View not found', "Check that the omniterm views are published or the package is installed correctly");
+            $this->omniError($view, 'View not found', 'Check that the omniterm views are published or the package is installed correctly');
         }
     }
 
@@ -72,7 +71,7 @@ class OmniHelpers
         if ($this->activeLiveRenderer !== null) {
             $this->activeLiveRenderer->write($html);
         } else {
-            render($html);
+            (new Renderer)->render($html);
         }
     }
 
@@ -85,14 +84,14 @@ class OmniHelpers
         $this->outputHtml($this->renderView($view, $data));
     }
 
-    public function line(string $html): void
+    public function render(string $html): void
     {
         $this->outputHtml($html);
     }
 
     public function parse(string $html): string
     {
-        return parse($html);
+        return (new Renderer)->parse($html)->toString();
     }
 
     public function terminal(): Terminal
@@ -126,6 +125,11 @@ class OmniHelpers
     // ----------------------------------------------------------------------
     // Elements
     // ----------------------------------------------------------------------
+
+    public function divider(string $label, string $color = 'text-stone-400')
+    {
+        $this->outputHtml($this->renderView('omniterm::elements.divider', ['label' => $label, 'color' => $color]));
+    }
 
     public function titleBar(string $title, string $color = 'sky'): void
     {
@@ -239,7 +243,15 @@ class OmniHelpers
 
     public function ask($question, $options = []): mixed
     {
-        return ask($this->renderView('omniterm::elements.question', ['question' => $question, 'options' => $options]), $options);
+        $html = $this->renderView('omniterm::elements.question', ['question' => $question, 'options' => $options]);
+        (new Renderer)->render($html);
+
+        $q = new Question('');
+        if (! empty($options)) {
+            $q->setAutocompleterValues($options);
+        }
+
+        return (new QuestionHelper)->ask(new ArrayInput([]), new ConsoleOutput, $q);
     }
 
     // ----------------------------------------------------------------------
@@ -255,32 +267,14 @@ class OmniHelpers
     // Live Tasks
     // ----------------------------------------------------------------------
 
-    public function liveTask(string $title, string $spinner = 'sand', ?array $colors = null, int $us = 1000): LiveTask
+    public function liveTask(string $title, string $spinner = 'sand', ?array $colors = null, int $us = 25_000): LiveTask
     {
         return new LiveTask($title, $spinner, $colors, $us);
     }
 
-    public function task(string $title, callable $callback, string $spinner = 'sand', ?array $colors = null): mixed
+    public function task(string $title, callable $callback, string $spinner = 'sand', ?array $colors = null): TaskResult|false
     {
-        $liveTask = $this->liveTask($title, $spinner, $colors);
-        $result = $liveTask->run($callback);
-
-        if (empty($result)) {
-            $liveTask->finishWithError($title.' failed');
-
-            return false;
-        }
-
-        $state = $result['state'] ?? 'success';
-        $message = $result['message'] ?? $title.' completed';
-
-        match ($state) {
-            'error' => $liveTask->finishWithError($message),
-            'warning' => $liveTask->finishWithWarning($message),
-            default => $liveTask->finish($message),
-        };
-
-        return $result;
+        return $this->liveTask($title, $spinner, $colors)->runTask($callback);
     }
 
     // ----------------------------------------------------------------------
@@ -304,12 +298,12 @@ class OmniHelpers
 
     public function info($message): void
     {
-        $this->outputHtml($this->renderView('omniterm::status.info', ['message' => $message], ['color' => $this->infoColor]));
+        $this->outputHtml($this->renderView('omniterm::status.info', ['message' => $message, 'color' => $this->infoColor]));
     }
 
     public function disabled($message): void
     {
-        $this->outputHtml($this->renderView('omniterm::status.disabled', ['message' => $message], ['color' => $this->disabledColor]));
+        $this->outputHtml($this->renderView('omniterm::status.disabled', ['message' => $message, 'color' => $this->disabledColor]));
     }
 
     // ----------------------------------------------------------------------
@@ -411,85 +405,17 @@ class OmniHelpers
     // Loaders
     // ----------------------------------------------------------------------
 
-    public function newLoader($type = 'sand', $colors = null, $us = 1000): void
+    public function newLoader(string $type = 'sand', ?array $colors = null, int $us = 50_000): void
     {
-        if (! $colors) {
-            $colors = ['text-amber-500', 'text-emerald-500', 'text-rose-500', 'text-sky-500'];
-        }
-
-        $this->asyncLoader = asyncFunction(function () {});
-        if ($type == 'loader') {
-            $this->async = [
-                'view' => 'omniterm::loaders.loading',
-                'type' => $type,
-                'us' => $us,
-                'colors' => $colors,
-            ];
-        } else {
-            $this->async = [
-                'view' => 'omniterm::loaders.spinner',
-                'type' => $type,
-                'us' => $us,
-                'colors' => $colors,
-            ];
-        }
-
+        $this->spinnerTask = new SpinnerTask($type, $colors ?? [], $us);
     }
 
-    public function runTask($title, $task): mixed
+    public function runTask(string $title, callable $task): TaskResult|false
     {
-        if (empty($this->async)) {
-            $this->omniError('runTask()','No loader instance found', 'Call newLoader() first');
-        }
-        $async = $this->asyncLoader;
-        $async->withTask($task);
-        $async->withFailOver($this->renderView($this->async['view'], [
-            'state' => 'failover',
-            'message' => $title,
-            'i' => 1,
-        ]));
-        $result = $async->run(function () use ($async, $title) {
-            $async->render($this->renderView($this->async['view'], [
-                'state' => 'running',
-                'type' => $this->async['type'],
-                'colors' => $this->async['colors'],
-                'message' => $title,
-                'i' => $async->getInterval(),
-            ]));
-        }, $this->async['us']);
-        if (empty($result)) {
-            $async->render($this->renderView($this->async['view'], [
-                'state' => 'error',
-                'type' => $this->async['type'],
-                'colors' => $this->async['colors'],
-                'message' => $title.' failed',
-                'i' => 1,
-            ]));
-
-            return false;
+        if ($this->spinnerTask === null) {
+            $this->omniError('runTask()', 'No loader instance found', 'Call newLoader() first');
         }
 
-        $state = 'success';
-        $message = $title.' completed';
-        $details = '';
-        if (! empty($result['state'])) {
-            $state = $result['state'];
-        }
-        if (! empty($result['message'])) {
-            $message = $result['message'];
-        }
-        if (! empty($result['details'])) {
-            $details = $result['details'];
-        }
-        $async->render($this->renderView($this->async['view'], [
-            'state' => $state,
-            'type' => $this->async['type'],
-            'colors' => $this->async['colors'],
-            'message' => $message,
-            'details' => $details,
-            'i' => 1,
-        ]));
-
-        return $result;
+        return $this->spinnerTask->run($title, $task);
     }
 }

@@ -17,7 +17,7 @@ if ($max == $current) {
     $progressColor = "bg-emerald-600 ";
 }
 ?>
-<div class="mx-1">
+<div class="mx-3">
     <div class="flex w-{{$length + $valuesWidth}}">
         <span class="w-{{$valuesWidth}} pr-2"></span>
         <span class="{{$borderColor}}  w-{{$progress}} content-repeat-[▁] text-right"></span>

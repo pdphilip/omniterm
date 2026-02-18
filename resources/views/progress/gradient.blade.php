@@ -22,7 +22,7 @@ $labelFg = "text-[{$rgb[0]},{$rgb[1]},{$rgb[2]}]";
 $current = number_format($current);
 $max = number_format($max);
 ?>
-<div class="mx-1">
+<div class="mx-3">
     <div class="flex w-{{$length + $valuesWidth}}">
         <span class="w-{{$valuesWidth}} pr-2"></span>
         <span class="{{$barFg}} w-{{$progress}} content-repeat-[▁]"></span>

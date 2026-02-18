@@ -5,8 +5,6 @@ namespace OmniTerm\Helpers;
 use Exception;
 use OmniTerm\LiveHtmlRenderer;
 
-use function OmniTerm\liveRender;
-
 class ProgressBar
 {
     protected LiveHtmlRenderer $instance;
@@ -29,7 +27,7 @@ class ProgressBar
             throw new Exception('Invalid progress bar type');
         }
         $this->type = $type;
-        $this->instance = liveRender();
+        $this->instance = new LiveHtmlRenderer;
         $this->screenWidth = $this->instance->getScreenWidth();
     }
 
