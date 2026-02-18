@@ -3,11 +3,11 @@
 namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
-use OmniTerm\OmniTerm;
+use OmniTerm\HasOmniTerm;
 
 class GlobalFunctionsCommand extends Command
 {
-    use OmniTerm;
+    use HasOmniTerm;
 
     protected $signature = 'omniterm:global-functions';
 

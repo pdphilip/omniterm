@@ -3,7 +3,7 @@
 namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
-use OmniTerm\OmniTerm;
+use OmniTerm\HasOmniTerm;
 
 /**
  * Sample: Visual Elements
@@ -14,7 +14,7 @@ use OmniTerm\OmniTerm;
  */
 class VisualElementsCommand extends Command
 {
-    use OmniTerm;
+    use HasOmniTerm;
 
     protected $signature = 'omniterm:visual-elements';
 

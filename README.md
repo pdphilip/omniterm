@@ -2,8 +2,6 @@
 
 <img src="https://cdn.snipform.io/pdphilip/omniterm/omni-term-banner.png" alt="OmniTerm" />
 
-# OmniTerm
-
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/pdphilip/omniterm.svg?style=flat-square)](https://packagist.org/packages/pdphilip/omniterm)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/pdphilip/omniterm/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/pdphilip/omniterm/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/pdphilip/omniterm.svg?style=flat-square)](https://packagist.org/packages/pdphilip/omniterm)
@@ -46,14 +44,14 @@ composer require pdphilip/omniterm
 
 ## Built-in Components
 
-Add the `OmniTerm` trait to any Artisan command:
+Add the `HasOmniTerm` trait to any Artisan command:
 
 ```php
-use OmniTerm\OmniTerm;
+use OmniTerm\HasOmniTerm;
 
 class MyCommand extends Command
 {
-    use OmniTerm;
+    use HasOmniTerm;
 
     public function handle()
     {
@@ -112,25 +110,28 @@ $this->omni->hrSuccess();
 
 ### Progress Bars
 
-Three styles: framed, simple, and gradient. The gradient bar smoothly transitions from amber to emerald as progress increases.
+Fluent builder API with three styles: simple, framed, and gradient. Color steps transition from rose through amber to emerald as progress increases.
 
 ```php
-$this->omni->createGradientProgressBar(100);
-$this->omni->showProgress();
+$bar = $this->omni->progressBar(100)->framed()->steps();
+$bar->start();
 
 foreach ($items as $item) {
     // work...
-    $this->omni->progressAdvance();
+    $bar->advance();
 }
 
-$this->omni->progressFinish();
+$bar->finish();
 ```
 
 Other variants:
 
 ```php
-$this->omni->createProgressBar(100, withColors: true);   // Framed with color steps
-$this->omni->createSimpleProgressBar(50);                 // Minimal bar
+$this->omni->progressBar(50);                              // Simple bar (sky)
+$this->omni->progressBar(50)->steps();                     // Simple with color steps
+$this->omni->progressBar(50)->framed()->color('indigo');   // Framed with custom color
+$this->omni->progressBar(50)->gradient();                  // Gradient (amber → emerald)
+$this->omni->progressBar(50)->framed()->gradient('rose', 'sky'); // Custom gradient
 ```
 
 ![Progress Bars](./docs/gifs/progress-bars.gif)
@@ -140,7 +141,9 @@ $this->omni->createSimpleProgressBar(50);                 // Minimal bar
 Run a callback in a background process with an animated spinner:
 
 ```php
-$this->omni->newLoader('sand');
+use OmniTerm\Async\Spinner;
+
+$this->omni->newLoader(Spinner::Sand);
 
 $result = $this->omni->runTask('Processing data...', function () {
     sleep(3);
@@ -148,10 +151,19 @@ $result = $this->omni->runTask('Processing data...', function () {
 });
 ```
 
+One-liner with `task()`:
+
+```php
+$this->omni->task('Processing batch job', function () {
+    sleep(3);
+    return ['state' => 'success', 'message' => 'Batch complete', 'details' => '500 records'];
+}, Spinner::DotsCircle, ['text-indigo-500', 'text-violet-500']);
+```
+
 For fine-grained control with live-updating counters:
 
 ```php
-$task = $this->omni->liveTask('Syncing records', 'dots');
+$task = $this->omni->liveTask('Syncing records', Spinner::Dots);
 $task->row('Processed', 0);
 $task->row('Skipped', 0);
 
@@ -167,32 +179,36 @@ $result = $task->run(function () use ($task) {
 $task->finish('All done');
 ```
 
-10 spinner types: `dots`, `dots2`, `dots3`, `dotsCircle`, `sand`, `clock`, `material`, `pong`, `progress`, `progressLoader`.
+The `Spinner` enum provides 10 animation types: `Dots`, `Dots2`, `Dots3`, `DotsCircle`, `Sand`, `Clock`, `Material`, `Pong`, `Progress`, `ProgressLoader`.
 
 ### Interactive Browser
 
-Split-pane TUI: scrollable list on the left, detail view on the right.
+Split-pane TUI: scrollable list on the left, detail view on the right. Items can be closures (rendered with full omni output), associative arrays (auto-formatted), or plain arrays.
 
 ```
-+-- Select an Index ----------------+-----------------------------------+
-| > users                           | Documents: 1,234                  |
-|   companies                       | Store Size: 45.2mb                |
-|   products                        | Health: green                     |
-+------------------------------------+-----------------------------------+
-  Up/Down Navigate  Enter Select  q/Esc Exit
++-- Server Dashboard ---------------+-----------------------------------+
+| > web-01                          |  ✓ GOOD  Healthy                  |
+|   web-02                          |  All checks passing               |
+|   db-primary                      |                                   |
+|   cache-01                        |  Metric    Value                  |
++-----------------------------------+  CPU        23%                   |
+                                    +-----------------------------------+
+  ↑/↓ Navigate  Enter Select  q/Esc Exit
 ```
 
 ```php
-$selected = $this->omni->browse(
-    label: 'Select an Index',
-    items: ['users', 'companies', 'products'],
-    detail: fn (string $item) => [
-        "Documents: 1,234",
-        "Store Size: 45.2mb",
-        "Health: green",
-    ],
-);
-// Returns selected item, or null on Esc
+use OmniTerm\OmniTerm;
+
+$selected = $this->omni->browse('Server Dashboard', [
+    'web-01' => function (OmniTerm $omni) {
+        $omni->statusSuccess('Healthy', 'All checks passing');
+        $omni->tableHeader('Metric', 'Value');
+        $omni->tableRowSuccess('CPU', '23%');
+        $omni->tableRow('Memory', '4.2 GB / 8 GB');
+    },
+    'db-primary' => ['status' => 'running', 'cpu' => '45%', 'memory' => '28 GB / 32 GB'],
+]);
+// Returns selected key, or null on Esc
 ```
 
 ### Interactive Prompts
@@ -213,28 +229,26 @@ The built-in components are just Blade templates compiled through OmniTerm's ren
 Write HTML with Tailwind classes, get ANSI output:
 
 ```php
-use function OmniTerm\render;
-
-render('<div class="flex">
+$this->omni->render('<div class="flex">
     <span class="bg-emerald-600 text-white font-bold px-1">PASS</span>
     <span class="flex-1 text-zinc-400 px-1">Database connection verified</span>
     <span class="text-zinc-600 text-right w-12">12ms</span>
 </div>');
 ```
 
-### `liveRender()`
+### `liveView()`
 
 Redraws in place, for live-updating displays:
 
 ```php
-use function OmniTerm\liveRender;
-
-$live = liveRender('<div>Starting...</div>');
+$live = $this->omni->liveView('<div>Starting...</div>');
 
 for ($i = 1; $i <= 100; $i++) {
     $live->reRender("<div>Progress: {$i}%</div>");
     usleep(50000);
 }
+
+$this->omni->endLiveView();
 ```
 
 ### `parse()`
@@ -242,9 +256,7 @@ for ($i = 1; $i <= 100; $i++) {
 Convert HTML to an ANSI string without printing:
 
 ```php
-use function OmniTerm\parse;
-
-$ansi = parse('<span class="text-sky-500">Hello</span>');
+$ansi = $this->omni->parse('<span class="text-sky-500">Hello</span>');
 ```
 
 ### `terminal()`
@@ -252,10 +264,8 @@ $ansi = parse('<span class="text-sky-500">Hello</span>');
 Terminal dimensions:
 
 ```php
-use function OmniTerm\terminal;
-
-$width = terminal()->getWidth();
-$height = terminal()->getHeight();
+$width = $this->omni->terminal()->getWidth();
+$height = $this->omni->terminal()->getHeight();
 ```
 
 ### Supported Classes
@@ -312,7 +322,7 @@ Per-character color interpolation across an element's width.
 | `to-{color}-{shade}`   | End color              |
 
 ```php
-render('<div class="flex">
+$this->omni->render('<div class="flex">
     <span class="flex-1 bg-gradient-to-r from-indigo-800 via-purple-500 to-pink-400 text-white text-center">
         Smooth gradient
     </span>
@@ -346,11 +356,11 @@ Since OmniTerm is a Laravel package, you can write your CLI output as Blade view
 </div>
 
 // In your command
-render(view('cli.deploy-status', [
+$this->omni->view('cli.deploy-status', [
     'badge' => 'DEPLOY',
     'color' => 'emerald',
     'message' => 'Production updated',
-]));
+]);
 ```
 
 ---
@@ -367,17 +377,20 @@ cp vendor/pdphilip/omniterm/samples/Commands/*.php app/Console/Commands/OmniTerm
 Update the namespace in each file to `App\Console\Commands\OmniTermSamples`, then:
 
 ```bash
-php artisan omniterm:full-demo          # Complete deployment simulation
+php artisan omniterm:full-demo          # One of every feature
 php artisan omniterm:status-messages    # Status messages
-php artisan omniterm:progress-bars      # All progress bar styles
-php artisan omniterm:spinners           # All 10 spinner animations
 php artisan omniterm:data-tables        # Key-value tables
 php artisan omniterm:visual-elements    # Boxes and horizontal rules
+php artisan omniterm:title-bars         # Title bar colors
+php artisan omniterm:progress-bars      # All progress bar styles
+php artisan omniterm:spinners           # All 10 spinner animations
 php artisan omniterm:async-tasks        # Async task execution
+php artisan omniterm:live-task-demo     # LiveTask with feedback rows
+php artisan omniterm:browser-demo       # Interactive split-pane browser
 php artisan omniterm:tailwind-classes   # Every supported CSS class
 php artisan omniterm:interactive        # Interactive prompts
 php artisan omniterm:custom-colors      # Custom color schemes
-php artisan omniterm:global-functions   # Using global functions
+php artisan omniterm:global-functions   # Render & live view functions
 ```
 
 ---

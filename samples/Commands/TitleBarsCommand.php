@@ -3,11 +3,11 @@
 namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
-use OmniTerm\OmniTerm;
+use OmniTerm\HasOmniTerm;
 
 class TitleBarsCommand extends Command
 {
-    use OmniTerm;
+    use HasOmniTerm;
 
     protected $signature = 'omniterm:title-bars';
 

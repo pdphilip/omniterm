@@ -4,7 +4,7 @@ namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
 use OmniTerm\Async\Spinner;
-use OmniTerm\OmniTerm;
+use OmniTerm\HasOmniTerm;
 
 /**
  * Sample: Async Tasks
@@ -15,7 +15,7 @@ use OmniTerm\OmniTerm;
  */
 class AsyncTasksCommand extends Command
 {
-    use OmniTerm;
+    use HasOmniTerm;
 
     protected $signature = 'omniterm:async-tasks';
 

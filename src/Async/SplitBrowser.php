@@ -9,7 +9,7 @@ use Laravel\Prompts\Concerns\Scrolling;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
 use OmniTerm\Browser\SplitBrowserRenderer;
-use OmniTerm\Helpers\OmniHelpers;
+use OmniTerm\OmniTerm;
 use OmniTerm\Rendering\Renderer;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Terminal;
@@ -25,20 +25,20 @@ class SplitBrowser extends Prompt
 
     protected array $entries;
 
-    protected OmniHelpers $omni;
+    protected OmniTerm $omni;
 
     protected array $detailCache = [];
 
     public function __construct(
         public string $label,
         array $items,
-        ?OmniHelpers $omni = null,
+        ?OmniTerm $omni = null,
         public int $scroll = 12,
         public string $hint = '',
     ) {
         $this->entries = $items;
         $this->items = array_keys($items);
-        $this->omni = $omni ?? new OmniHelpers;
+        $this->omni = $omni ?? new OmniTerm;
 
         $this->required = false;
         $this->validate = null;
@@ -121,7 +121,7 @@ class SplitBrowser extends Prompt
     public static function browse(
         string $label,
         array $items,
-        ?OmniHelpers $omni = null,
+        ?OmniTerm $omni = null,
         int $scroll = 12,
         string $hint = '',
     ): mixed {

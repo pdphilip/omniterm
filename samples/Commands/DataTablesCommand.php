@@ -3,7 +3,7 @@
 namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
-use OmniTerm\OmniTerm;
+use OmniTerm\HasOmniTerm;
 
 /**
  * Sample: Data Tables
@@ -14,7 +14,7 @@ use OmniTerm\OmniTerm;
  */
 class DataTablesCommand extends Command
 {
-    use OmniTerm;
+    use HasOmniTerm;
 
     protected $signature = 'omniterm:data-tables';
 

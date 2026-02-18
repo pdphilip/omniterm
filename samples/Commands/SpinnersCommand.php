@@ -4,7 +4,7 @@ namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
 use OmniTerm\Async\Spinner;
-use OmniTerm\OmniTerm;
+use OmniTerm\HasOmniTerm;
 
 /**
  * Sample: Spinners
@@ -15,7 +15,7 @@ use OmniTerm\OmniTerm;
  */
 class SpinnersCommand extends Command
 {
-    use OmniTerm;
+    use HasOmniTerm;
 
     protected $signature = 'omniterm:spinners {--type= : Show only a specific spinner type}';
 

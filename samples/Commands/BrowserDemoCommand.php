@@ -3,7 +3,7 @@
 namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
-use OmniTerm\Helpers\OmniHelpers;
+use OmniTerm\HasOmniTerm;
 use OmniTerm\OmniTerm;
 
 /**
@@ -15,7 +15,7 @@ use OmniTerm\OmniTerm;
  */
 class BrowserDemoCommand extends Command
 {
-    use OmniTerm;
+    use HasOmniTerm;
 
     protected $signature = 'omniterm:browser-demo';
 
@@ -27,7 +27,7 @@ class BrowserDemoCommand extends Command
         $this->newLine();
 
         $servers = [
-            'web-01' => function (OmniHelpers $omni) {
+            'web-01' => function (OmniTerm $omni) {
                 $omni->statusSuccess('Healthy', 'All checks passing');
                 $omni->tableHeader('Metric', 'Value');
                 $omni->tableRowSuccess('CPU', '23%');
@@ -37,7 +37,7 @@ class BrowserDemoCommand extends Command
                 $omni->tableRow('OS', 'Ubuntu 22.04');
                 $omni->tableRow('Load', '0.45 0.32 0.28');
             },
-            'web-02' => function (OmniHelpers $omni) {
+            'web-02' => function (OmniTerm $omni) {
                 $omni->statusWarning('High Load', 'CPU above 60%');
                 $omni->tableHeader('Metric', 'Value');
                 $omni->tableRowWarning('CPU', '67%');
@@ -50,7 +50,7 @@ class BrowserDemoCommand extends Command
             'db-primary' => ['status' => 'running', 'cpu' => '45%', 'memory' => '28.3 GB / 32 GB', 'uptime' => '42 days', 'ip' => '10.0.2.10', 'os' => 'Ubuntu 22.04', 'load' => '2.10 1.89 1.76'],
             'db-replica' => ['status' => 'running', 'cpu' => '12%', 'memory' => '16.1 GB / 32 GB', 'uptime' => '42 days', 'ip' => '10.0.2.11', 'os' => 'Ubuntu 22.04', 'load' => '0.55 0.42 0.38'],
             'cache-01' => ['status' => 'running', 'cpu' => '8%', 'memory' => '3.8 GB / 16 GB', 'uptime' => '90 days', 'ip' => '10.0.3.10', 'os' => 'Alpine 3.18', 'load' => '0.12 0.08 0.05'],
-            'queue-01' => function (OmniHelpers $omni) {
+            'queue-01' => function (OmniTerm $omni) {
                 $omni->statusError('Critical', 'CPU at 89%, memory near limit');
                 $omni->tableHeader('Metric', 'Value');
                 $omni->tableRowError('CPU', '89%');
@@ -60,7 +60,7 @@ class BrowserDemoCommand extends Command
                 $omni->tableRow('OS', 'Ubuntu 22.04');
                 $omni->tableRow('Load', '3.45 2.98 2.67');
             },
-            'queue-02' => function (OmniHelpers $omni) {
+            'queue-02' => function (OmniTerm $omni) {
                 $omni->statusDisabled('Stopped', 'Server is offline');
                 $omni->tableHeader('Metric', 'Value');
                 $omni->tableRowDisabled('CPU', '0%');
