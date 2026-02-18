@@ -25,96 +25,107 @@ class ProgressBarsCommand extends Command
         $this->omni->titleBar('Progress Bars', 'emerald');
         $this->newLine();
 
-        // Framed progress bar with colors
-        $this->omni->info('1. Framed Progress Bar (with color gradient)');
-        $this->line('   Colors change from red → green as progress increases');
-        $this->newLine();
+        $total = 50;
+        $sleep = 50_000;
 
-        $this->omni->createProgressBar(50, withColors: true);
-        $this->omni->showProgress();
-
-        for ($i = 0; $i < 50; $i++) {
-            usleep(30000); // 30ms delay
-            $this->omni->progressAdvance();
+        // ── Simple (default sky color) ───────────────────────────────────
+        $this->omni->divider('Simple');
+        $bar = $this->omni->progressBar($total);
+        $bar->start();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $bar->advance();
         }
-
-        $this->omni->progressFinish();
+        $bar->finish();
         $this->newLine();
 
-        // Framed progress bar without colors
-        $this->omni->info('2. Framed Progress Bar (monochrome)');
-        $this->newLine();
-
-        $this->omni->createProgressBar(30, withColors: false);
-        $this->omni->showProgress();
-
-        for ($i = 0; $i < 30; $i++) {
-            usleep(40000);
-            $this->omni->progressAdvance();
+        // ── Simple with color steps ──────────────────────────────────────
+        $this->omni->divider('Simple with color steps');
+        $bar = $this->omni->progressBar($total)->steps();
+        $bar->start();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $bar->advance();
         }
-
-        $this->omni->progressFinish();
+        $bar->finish();
         $this->newLine();
 
-        // Simple progress bar with colors
-        $this->omni->info('3. Simple Progress Bar (with colors)');
-        $this->newLine();
-
-        $this->omni->createSimpleProgressBar(40, withColors: true);
-        $this->omni->showProgress();
-
-        for ($i = 0; $i < 40; $i++) {
-            usleep(35000);
-            $this->omni->progressAdvance();
+        // ── Simple with custom color ─────────────────────────────────────
+        $this->omni->divider('Simple with custom color');
+        $bar = $this->omni->progressBar($total)->color('indigo');
+        $bar->start();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $bar->advance();
         }
-
-        $this->omni->progressFinish();
+        $bar->finish();
         $this->newLine();
 
-        // Simple progress bar without colors
-        $this->omni->info('4. Simple Progress Bar (monochrome)');
-        $this->newLine();
-
-        $this->omni->createSimpleProgressBar(25, withColors: false);
-        $this->omni->showProgress();
-
-        for ($i = 0; $i < 25; $i++) {
-            usleep(50000);
-            $this->omni->progressAdvance();
+        // ── Framed with custom color ─────────────────────────────────────
+        $this->omni->divider('Framed with custom color');
+        $bar = $this->omni->progressBar($total)->framed()->color('indigo');
+        $bar->start();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $bar->advance();
         }
-
-        $this->omni->progressFinish();
+        $bar->finish();
         $this->newLine();
 
-        // Gradient progress bar
-        $this->omni->info('5. Gradient Progress Bar (smooth amber → emerald)');
-        $this->newLine();
-
-        $this->omni->createGradientProgressBar(60);
-        $this->omni->showProgress();
-
-        for ($i = 0; $i < 60; $i++) {
-            usleep(30000);
-            $this->omni->progressAdvance();
+        // ── Framed with color steps ──────────────────────────────────────
+        $this->omni->divider('Framed with color steps');
+        $bar = $this->omni->progressBar($total)->framed()->steps();
+        $bar->start();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $bar->advance();
         }
-
-        $this->omni->progressFinish();
+        $bar->finish();
         $this->newLine();
 
-        // Variable increment example
-        $this->omni->info('6. Variable Increment (advance by different amounts)');
+        // ── Framed with custom step colors ───────────────────────────────
+        $this->omni->divider('Framed with custom step colors');
+        $bar = $this->omni->progressBar($total)->framed()->steps(['rose', 'amber', 'emerald']);
+        $bar->start();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $bar->advance();
+        }
+        $bar->finish();
         $this->newLine();
 
-        $this->omni->createProgressBar(100, withColors: true);
-        $this->omni->showProgress();
+        // ── Gradient ─────────────────────────────────────────────────────
+        $this->omni->divider('Gradient');
+        $bar = $this->omni->progressBar($total)->gradient();
+        $bar->start();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $bar->advance();
+        }
+        $bar->finish();
+        $this->newLine();
 
+        // ── Framed gradient with custom colors ───────────────────────────
+        $this->omni->divider('Framed gradient (rose → sky)');
+        $bar = $this->omni->progressBar($total)->framed()->gradient('rose', 'sky');
+        $bar->start();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $bar->advance();
+        }
+        $bar->finish();
+        $this->newLine();
+
+        // ── Variable increment ───────────────────────────────────────────
+        $this->omni->divider('Variable increment');
+        $bar = $this->omni->progressBar(100)->framed()->steps();
+        $bar->start();
         $increments = [5, 10, 15, 20, 10, 5, 15, 10, 5, 5];
         foreach ($increments as $increment) {
-            usleep(200000); // 200ms delay
-            $this->omni->progressAdvance($increment);
+            usleep(200_000);
+            $bar->advance($increment);
         }
-
-        $this->omni->progressFinish();
+        $bar->finish();
         $this->newLine();
 
         $this->omni->success('All progress bar demos complete!');

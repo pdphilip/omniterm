@@ -10,17 +10,14 @@ class SpinnerTask
 {
     protected AsyncHtmlRenderer $async;
 
-    protected string $view;
-
     public function __construct(
-        protected string $type = 'sand',
+        protected Spinner $spinner = Spinner::Sand,
         protected array $colors = [],
         protected int $us = 50_000,
     ) {
         if (empty($this->colors)) {
             $this->colors = ['text-amber-500', 'text-emerald-500', 'text-rose-500', 'text-sky-500'];
         }
-        $this->view = $type === 'loader' ? 'omniterm::loaders.loading' : 'omniterm::loaders.spinner';
         $this->async = new AsyncHtmlRenderer(function () {});
     }
 
@@ -52,9 +49,9 @@ class SpinnerTask
 
     protected function buildHtml(string $state, string $message, int $frame, string $details = ''): string
     {
-        return (string) view($this->view, [
+        return (string) view($this->spinner->view(), [
             'state' => $state,
-            'type' => $this->type,
+            'frames' => $this->spinner->frames(),
             'colors' => $this->colors,
             'message' => $message,
             'details' => $details,

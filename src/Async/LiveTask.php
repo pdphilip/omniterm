@@ -12,7 +12,7 @@ class LiveTask
 
     protected AsyncHtmlRenderer $async;
 
-    protected string $spinner;
+    protected Spinner $spinner;
 
     protected array $colors;
 
@@ -20,7 +20,7 @@ class LiveTask
 
     public function __construct(
         protected string $title,
-        string $spinner = 'sand',
+        Spinner $spinner = Spinner::Sand,
         ?array $colors = null,
         int $us = 1000,
     ) {
@@ -131,7 +131,7 @@ class LiveTask
             'title' => $message ?? $this->title,
             'state' => $state,
             'frame' => $frame,
-            'spinner' => $this->spinner,
+            'frames' => $this->spinner->frames(),
             'colors' => $this->colors,
             'rows' => $this->rows,
         ]);

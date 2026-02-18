@@ -3,6 +3,7 @@
 namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
+use OmniTerm\Async\Spinner;
 use OmniTerm\OmniTerm;
 
 /**
@@ -29,7 +30,7 @@ class AsyncTasksCommand extends Command
         $this->newLine();
 
         // Task 1: Success
-        $this->omni->newLoader('sand', ['text-amber-500', 'text-emerald-500']);
+        $this->omni->newLoader(Spinner::Sand, ['text-amber-500', 'text-emerald-500']);
 
         $result = $this->omni->runTask('Connecting to database', function () {
             usleep(1500000); // 1.5 seconds
@@ -44,7 +45,7 @@ class AsyncTasksCommand extends Command
         usleep(300000);
 
         // Task 2: Success with custom message
-        $this->omni->newLoader('dots', ['text-sky-500', 'text-cyan-500']);
+        $this->omni->newLoader(Spinner::Dots, ['text-sky-500', 'text-cyan-500']);
 
         $result = $this->omni->runTask('Fetching user data', function () {
             usleep(2000000); // 2 seconds
@@ -58,7 +59,7 @@ class AsyncTasksCommand extends Command
         usleep(300000);
 
         // Task 3: Warning
-        $this->omni->newLoader('dotsCircle', ['text-amber-500', 'text-orange-500']);
+        $this->omni->newLoader(Spinner::DotsCircle, ['text-amber-500', 'text-orange-500']);
 
         $result = $this->omni->runTask('Checking cache status', function () {
             usleep(1000000); // 1 second
@@ -73,7 +74,7 @@ class AsyncTasksCommand extends Command
         usleep(300000);
 
         // Task 4: Error
-        $this->omni->newLoader('material', ['text-rose-500', 'text-red-500']);
+        $this->omni->newLoader(Spinner::Material, ['text-rose-500', 'text-red-500']);
 
         $result = $this->omni->runTask('Connecting to external API', function () {
             usleep(2500000); // 2.5 seconds
@@ -98,7 +99,7 @@ class AsyncTasksCommand extends Command
         usleep(300000);
 
         // Task 5: Long running task with progress spinner
-        $this->omni->newLoader('progressLoader', ['text-indigo-500', 'text-violet-500']);
+        $this->omni->newLoader(Spinner::ProgressLoader, ['text-indigo-500', 'text-violet-500']);
 
         $result = $this->omni->runTask('Processing batch job', function () {
             usleep(3000000); // 3 seconds
@@ -118,7 +119,7 @@ class AsyncTasksCommand extends Command
         $this->omni->info('Task results can be used in your code:');
         $this->newLine();
 
-        $this->omni->newLoader('sand');
+        $this->omni->newLoader(Spinner::Sand);
 
         $result = $this->omni->runTask('Computing statistics', function () {
             usleep(1500000);

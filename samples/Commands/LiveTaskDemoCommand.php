@@ -3,6 +3,7 @@
 namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
+use OmniTerm\Async\Spinner;
 use OmniTerm\OmniTerm;
 
 class LiveTaskDemoCommand extends Command
@@ -42,7 +43,7 @@ class LiveTaskDemoCommand extends Command
                 'state' => 'warning',
                 'message' => 'API responded slowly',
             ];
-        }, spinner: 'dots');
+        }, spinner: Spinner::Dots);
 
         $this->newLine();
         $this->omni->hrInfo();
@@ -54,7 +55,7 @@ class LiveTaskDemoCommand extends Command
         $this->omni->info('Live task with feedback rows:');
         $this->newLine();
 
-        $task = $this->omni->liveTask('Processing records', spinner: 'dots3')
+        $task = $this->omni->liveTask('Processing records', spinner: Spinner::Dots3)
             ->row('Created', 0, 'text-sky-500')
             ->row('Updated', 0, 'text-emerald-500')
             ->row('Skipped', 0, 'text-amber-500')

@@ -1,15 +1,8 @@
 <?php
-
-use OmniTerm\Helpers\Partials\AsciiHelper;
-
-if (empty($type)) {
-    $type = 'sand';
-}
 if (empty($colors)) {
     $colors = ["text-amber-500"];
 }
-$characters = AsciiHelper::loadSpinner($type);
-$intervals = count($characters) - 1;
+$intervals = count($frames) - 1;
 $colorIntervals = count($colors) - 1;
 $j = 0;
 while ($i > $intervals) {
@@ -20,7 +13,7 @@ while ($i > $intervals) {
     }
 }
 
-$show = $characters[$i];
+$show = $frames[$i];
 $show = str_replace(' ', '&nbsp;', $show);
 $textColor = $colors[$j];
 switch ($state) {

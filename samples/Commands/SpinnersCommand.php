@@ -3,6 +3,7 @@
 namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
+use OmniTerm\Async\Spinner;
 use OmniTerm\OmniTerm;
 
 /**
@@ -25,29 +26,30 @@ class SpinnersCommand extends Command
         $this->omni->titleBar('Spinner Animations', 'amber');
         $this->newLine();
 
-        $spinnerTypes = [
-            'dots' => 'Classic braille dots',
-            'dots2' => 'Double braille pattern',
-            'dots3' => 'Flowing dots',
-            'dotsCircle' => 'Circular dot pattern',
-            'sand' => 'Filling hourglass effect',
-            'clock' => 'Clock face animation',
-            'material' => 'Material design loader',
-            'pong' => 'Bouncing ball',
-            'progress' => 'Progress indicator',
-            'progressLoader' => 'Looping progress',
+        $spinners = [
+            Spinner::Dots,
+            Spinner::Dots2,
+            Spinner::Dots3,
+            Spinner::DotsCircle,
+            Spinner::Sand,
+            Spinner::Clock,
+            Spinner::Material,
+            Spinner::Pong,
+            Spinner::Progress,
+            Spinner::ProgressLoader,
         ];
 
         $selectedType = $this->option('type');
 
         if ($selectedType) {
-            if (! isset($spinnerTypes[$selectedType])) {
+            $spinner = Spinner::tryFrom($selectedType);
+            if (! $spinner) {
                 $this->omni->error("Unknown spinner type: {$selectedType}");
-                $this->line('Available types: '.implode(', ', array_keys($spinnerTypes)));
+                $this->line('Available types: '.implode(', ', array_map(fn (Spinner $s) => $s->value, $spinners)));
 
                 return Command::FAILURE;
             }
-            $spinnerTypes = [$selectedType => $spinnerTypes[$selectedType]];
+            $spinners = [$spinner];
         }
 
         $this->omni->roundedBox('Spinner Animations', 'text-cyan-500');
@@ -56,22 +58,20 @@ class SpinnersCommand extends Command
         $this->omni->info('Each spinner will run for ~2 seconds');
         $this->newLine();
 
-        foreach ($spinnerTypes as $type => $description) {
-            $this->omni->line("<div><span class='text-yellow-400'>{$type}</span>  - {$description}</div>");
+        foreach ($spinners as $spinner) {
+            $this->omni->render("<div><span class='text-yellow-400'>{$spinner->value}</span>  - {$spinner->label()}</div>");
         }
 
         $this->newLine();
         $this->omni->hrInfo();
         $this->newLine();
 
-        foreach ($spinnerTypes as $type => $description) {
-            // Different color schemes for variety
-            $colors = $this->getColorsForType($type);
+        foreach ($spinners as $spinner) {
+            $colors = $this->getColorsForSpinner($spinner);
 
-            $this->omni->newLoader($type, $colors, 80000); // 80ms per frame
+            $this->omni->newLoader($spinner, $colors, 80000);
 
-            $this->omni->runTask("Spinner: {$type}", function () {
-                // Simulate work for 2 seconds
+            $this->omni->runTask("Spinner: {$spinner->value}", function () {
                 usleep(2000000);
 
                 return [
@@ -80,31 +80,31 @@ class SpinnersCommand extends Command
                 ];
             });
 
-            usleep(300000); // Brief pause between spinners
+            usleep(300000);
         }
 
         $this->newLine();
         $this->omni->success('All spinner demos complete!');
         $this->newLine();
 
-        $this->omni->line('<div class="text-gray-400">Tip: Run with --type=sand to demo a specific spinner</div>');
+        $this->omni->render('<div class="text-gray-400">Tip: Run with --type=sand to demo a specific spinner</div>');
 
         return Command::SUCCESS;
     }
 
-    private function getColorsForType(string $type): array
+    private function getColorsForSpinner(Spinner $spinner): array
     {
-        return match ($type) {
-            'dots' => ['text-sky-500', 'text-cyan-500'],
-            'dots2' => ['text-violet-500', 'text-purple-500'],
-            'dots3' => ['text-pink-500', 'text-rose-500'],
-            'dotsCircle' => ['text-emerald-500', 'text-teal-500'],
-            'sand' => ['text-amber-500', 'text-yellow-500'],
-            'clock' => ['text-orange-500'],
-            'material' => ['text-sky-500', 'text-emerald-500', 'text-amber-500'],
-            'pong' => ['text-lime-500', 'text-green-500'],
-            'progress' => ['text-indigo-500', 'text-blue-500'],
-            'progressLoader' => ['text-rose-500', 'text-pink-500', 'text-fuchsia-500'],
+        return match ($spinner) {
+            Spinner::Dots => ['text-sky-500', 'text-cyan-500'],
+            Spinner::Dots2 => ['text-violet-500', 'text-purple-500'],
+            Spinner::Dots3 => ['text-pink-500', 'text-rose-500'],
+            Spinner::DotsCircle => ['text-emerald-500', 'text-teal-500'],
+            Spinner::Sand => ['text-amber-500', 'text-yellow-500'],
+            Spinner::Clock => ['text-orange-500'],
+            Spinner::Material => ['text-sky-500', 'text-emerald-500', 'text-amber-500'],
+            Spinner::Pong => ['text-lime-500', 'text-green-500'],
+            Spinner::Progress => ['text-indigo-500', 'text-blue-500'],
+            Spinner::ProgressLoader => ['text-rose-500', 'text-pink-500', 'text-fuchsia-500'],
             default => ['text-amber-500', 'text-emerald-500'],
         };
     }

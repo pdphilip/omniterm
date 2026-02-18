@@ -3,6 +3,7 @@
 namespace OmniTerm\Samples;
 
 use Illuminate\Console\Command;
+use OmniTerm\Async\Spinner;
 use OmniTerm\OmniTerm;
 
 class FullDemoCommand extends Command
@@ -81,90 +82,91 @@ class FullDemoCommand extends Command
         $total = 50;
         $sleep = 50_000;
 
-        // Framed with colors
-        $this->omni->divider('Framed with colors');
-        $this->omni->createProgressBar($total, withColors: true);
-        $this->omni->showProgress();
+        // Simple (default sky color)
+        $this->omni->divider('Simple');
+        $bar = $this->omni->progressBar($total);
+        $bar->start();
         for ($i = 0; $i < $total; $i++) {
             usleep($sleep);
-            $this->omni->progressAdvance();
+            $bar->advance();
         }
-        $this->omni->progressFinish();
+        $bar->finish();
         $this->newLine();
 
-        // Framed without colors
-        $this->omni->divider('Framed without colors');
-        $this->omni->createProgressBar($total, withColors: false);
-        $this->omni->showProgress();
+        // Simple with color steps
+        $this->omni->divider('Simple with color steps');
+        $bar = $this->omni->progressBar($total)->steps();
+        $bar->start();
         for ($i = 0; $i < $total; $i++) {
             usleep($sleep);
-            $this->omni->progressAdvance();
+            $bar->advance();
         }
-        $this->omni->progressFinish();
-        $this->newLine();
-        // Simple with colors
-        $this->omni->divider('Simple with colors');
-        $this->omni->createSimpleProgressBar($total, withColors: true);
-        $this->omni->showProgress();
-        for ($i = 0; $i < $total; $i++) {
-            usleep($sleep);
-            $this->omni->progressAdvance();
-        }
-        $this->omni->progressFinish();
+        $bar->finish();
         $this->newLine();
 
-        // Simple without colors
-        $this->omni->divider('Simple without colors');
-        $this->omni->createSimpleProgressBar($total, withColors: false);
-        $this->omni->showProgress();
+        // Framed with custom color
+        $this->omni->divider('Framed with custom color');
+        $bar = $this->omni->progressBar($total)->framed()->color('indigo');
+        $bar->start();
         for ($i = 0; $i < $total; $i++) {
             usleep($sleep);
-            $this->omni->progressAdvance();
+            $bar->advance();
         }
-        $this->omni->progressFinish();
+        $bar->finish();
+        $this->newLine();
+
+        // Framed with color steps
+        $this->omni->divider('Framed with color steps');
+        $bar = $this->omni->progressBar($total)->framed()->steps();
+        $bar->start();
+        for ($i = 0; $i < $total; $i++) {
+            usleep($sleep);
+            $bar->advance();
+        }
+        $bar->finish();
         $this->newLine();
 
         // Gradient
         $this->omni->divider('Gradient');
-        $this->omni->createGradientProgressBar($total);
-        $this->omni->showProgress();
+        $bar = $this->omni->progressBar($total)->gradient();
+        $bar->start();
         for ($i = 0; $i < $total; $i++) {
             usleep($sleep);
-            $this->omni->progressAdvance();
+            $bar->advance();
         }
-        $this->omni->progressFinish();
+        $bar->finish();
         $this->newLine();
 
-        // Gradient framed
-        $this->omni->divider('Gradient Framed');
-        $this->omni->createGradientFramedProgressBar($total);
-        $this->omni->showProgress();
+        // Framed gradient with custom colors
+        $this->omni->divider('Framed gradient (rose -> sky)');
+        $bar = $this->omni->progressBar($total)->framed()->gradient('rose', 'sky');
+        $bar->start();
         for ($i = 0; $i < $total; $i++) {
             usleep($sleep);
-            $this->omni->progressAdvance();
+            $bar->advance();
         }
-        $this->omni->progressFinish();
+        $bar->finish();
         $this->newLine();
 
         // ── Spinner Tasks (newLoader + runTask) ────────────────────────────
         $this->omni->info('Spinner tasks');
         $this->newLine();
 
-        $this->omni->newLoader('sand', ['text-amber-500', 'text-emerald-500']);
+        $this->omni->newLoader(Spinner::Sand, ['text-amber-500', 'text-emerald-500']);
         $this->omni->runTask('Task with success', function () {
             usleep(1_000_000);
 
             return ['state' => 'success', 'message' => 'Completed', 'details' => '128 records'];
         });
 
-        $this->omni->newLoader('dots', ['text-rose-500', 'text-pink-500']);
+        $this->omni->newLoader(Spinner::Dots, ['text-rose-500', 'text-pink-500']);
         $this->omni->runTask('Task with warning', function () {
             usleep(1_000_000);
 
             return ['state' => 'warning', 'message' => 'Partial completion', 'details' => '3 skipped'];
         });
 
-        $this->omni->newLoader('material', ['text-sky-500', 'text-cyan-500']);
+        $this->omni->newLoader(Spinner::Material, ['text-sky-500', 'text-cyan-500']);
         $this->omni->runTask('Task with error', function () {
             usleep(1_000_000);
 
@@ -181,7 +183,7 @@ class FullDemoCommand extends Command
             usleep(1_500_000);
 
             return ['state' => 'success', 'message' => 'Batch complete', 'details' => '500 records'];
-        }, 'dotsCircle', ['text-indigo-500', 'text-violet-500']);
+        }, Spinner::DotsCircle, ['text-indigo-500', 'text-violet-500']);
 
         $this->newLine();
 
@@ -189,7 +191,7 @@ class FullDemoCommand extends Command
         $this->omni->info('Manual LiveTask with rows');
         $this->newLine();
 
-        $liveTask = $this->omni->liveTask('Syncing data', 'sand', ['text-sky-500', 'text-emerald-500']);
+        $liveTask = $this->omni->liveTask('Syncing data', Spinner::Sand, ['text-sky-500', 'text-emerald-500']);
         $liveTask->row('Users', 0, 'text-sky-500');
         $liveTask->row('Orders', 0, 'text-emerald-500');
         $liveTask->row('Products', 0, 'text-amber-500');

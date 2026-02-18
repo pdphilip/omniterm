@@ -1,9 +1,5 @@
 <?php
-
-use OmniTerm\Helpers\Partials\AsciiHelper;
-
-$characters = AsciiHelper::loadSpinner($spinner);
-$intervals = count($characters) - 1;
+$intervals = count($frames) - 1;
 $colorIntervals = count($colors) - 1;
 $i = $frame;
 $j = 0;
@@ -15,7 +11,7 @@ while ($i > $intervals) {
     }
 }
 
-$show = $characters[$i];
+$show = $frames[$i];
 $show = str_replace(' ', '&nbsp;', $show);
 $textColor = $colors[$j];
 switch ($state) {

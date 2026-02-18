@@ -5,6 +5,7 @@ namespace OmniTerm\Helpers;
 use Closure;
 use InvalidArgumentException;
 use OmniTerm\Async\LiveTask;
+use OmniTerm\Async\Spinner;
 use OmniTerm\Async\SpinnerTask;
 use OmniTerm\Async\SplitBrowser;
 use OmniTerm\Async\TaskResult;
@@ -267,12 +268,12 @@ class OmniHelpers
     // Live Tasks
     // ----------------------------------------------------------------------
 
-    public function liveTask(string $title, string $spinner = 'sand', ?array $colors = null, int $us = 25_000): LiveTask
+    public function liveTask(string $title, Spinner $spinner = Spinner::Sand, ?array $colors = null, int $us = 25_000): LiveTask
     {
         return new LiveTask($title, $spinner, $colors, $us);
     }
 
-    public function task(string $title, callable $callback, string $spinner = 'sand', ?array $colors = null): TaskResult|false
+    public function task(string $title, callable $callback, Spinner $spinner = Spinner::Sand, ?array $colors = null): TaskResult|false
     {
         return $this->liveTask($title, $spinner, $colors)->runTask($callback);
     }
@@ -344,59 +345,59 @@ class OmniHelpers
     // Progress bars
     // ----------------------------------------------------------------------
 
-    public function createProgressBar($total, $withColors = true)
+    public function progressBar(int $total): ProgressBar
     {
+        $this->progressInstance = new ProgressBar($total);
+
+        return $this->progressInstance;
+    }
+
+    public function createProgressBar($total, $withColors = true): void
+    {
+        $bar = $this->progressBar($total)->framed();
         if ($withColors) {
-            $this->progressInstance = new ProgressBar('framed-color');
-        } else {
-            $this->progressInstance = new ProgressBar('framed');
+            $bar->steps();
         }
-        $this->progressInstance->setTotal($total);
-
     }
 
-    public function createGradientProgressBar($total)
+    public function createGradientProgressBar($total): void
     {
-        $this->progressInstance = new ProgressBar('gradient');
-        $this->progressInstance->setTotal($total);
+        $this->progressBar($total)->gradient();
     }
 
-    public function createGradientFramedProgressBar($total)
+    public function createGradientFramedProgressBar($total): void
     {
-        $this->progressInstance = new ProgressBar('gradient-framed');
-        $this->progressInstance->setTotal($total);
+        $this->progressBar($total)->framed()->gradient();
     }
 
-    public function createSimpleProgressBar($total, $withColors = true)
+    public function createSimpleProgressBar($total, $withColors = true): void
     {
+        $bar = $this->progressBar($total);
         if ($withColors) {
-            $this->progressInstance = new ProgressBar('simple-color');
-        } else {
-            $this->progressInstance = new ProgressBar('simple');
+            $bar->steps();
         }
-        $this->progressInstance->setTotal($total);
     }
 
     public function showProgress(): void
     {
         if (empty($this->progressInstance)) {
-            $this->omniError('showProgress()', 'No progress bar instance found', 'Call createProgressBar() first');
+            $this->omniError('showProgress()', 'No progress bar instance found', 'Call progressBar() first');
         }
-        $this->progressInstance->show();
+        $this->progressInstance->start();
     }
 
     public function progressAdvance($by = 1): void
     {
         if (empty($this->progressInstance)) {
-            $this->omniError('progressAdvance()', 'No progress bar instance found', 'Call createProgressBar() first');
+            $this->omniError('progressAdvance()', 'No progress bar instance found', 'Call progressBar() first');
         }
-        $this->progressInstance->increment($by);
+        $this->progressInstance->advance($by);
     }
 
     public function progressFinish(): void
     {
         if (empty($this->progressInstance)) {
-            $this->omniError('progressFinish()', 'No progress bar instance found', 'Call createProgressBar() first');
+            $this->omniError('progressFinish()', 'No progress bar instance found', 'Call progressBar() first');
         }
         $this->progressInstance->finish();
     }
@@ -405,9 +406,9 @@ class OmniHelpers
     // Loaders
     // ----------------------------------------------------------------------
 
-    public function newLoader(string $type = 'sand', ?array $colors = null, int $us = 50_000): void
+    public function newLoader(Spinner $spinner = Spinner::Sand, ?array $colors = null, int $us = 50_000): void
     {
-        $this->spinnerTask = new SpinnerTask($type, $colors ?? [], $us);
+        $this->spinnerTask = new SpinnerTask($spinner, $colors ?? [], $us);
     }
 
     public function runTask(string $title, callable $task): TaskResult|false
