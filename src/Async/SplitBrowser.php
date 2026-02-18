@@ -9,6 +9,10 @@ use Laravel\Prompts\Concerns\Scrolling;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
 use OmniTerm\Browser\SplitBrowserRenderer;
+use OmniTerm\Helpers\OmniHelpers;
+use OmniTerm\Rendering\Renderer;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Terminal;
 
 class SplitBrowser extends Prompt
 {
@@ -16,23 +20,32 @@ class SplitBrowser extends Prompt
 
     public bool $cancelled = false;
 
+    /** @var array<int, string> */
+    public array $items = [];
+
+    protected array $entries;
+
+    protected OmniHelpers $omni;
+
     protected array $detailCache = [];
 
     public function __construct(
         public string $label,
-        public array $items,
-        public Closure $detailCallback,
+        array $items,
+        ?OmniHelpers $omni = null,
         public int $scroll = 12,
         public string $hint = '',
     ) {
+        $this->entries = $items;
+        $this->items = array_keys($items);
+        $this->omni = $omni ?? new OmniHelpers;
+
         $this->required = false;
         $this->validate = null;
 
         if ($this->hint === '') {
             $this->hint = '↑/↓ Navigate  Enter Select  q/Esc Exit';
         }
-
-        $this->items = array_values($this->items);
 
         $this->initializeScrolling(0);
 
@@ -77,15 +90,27 @@ class SplitBrowser extends Prompt
             return [];
         }
 
-        if (isset($this->detailCache[$this->highlighted])) {
-            return $this->detailCache[$this->highlighted];
+        $label = $this->items[$this->highlighted];
+
+        if (isset($this->detailCache[$label])) {
+            return $this->detailCache[$label];
         }
 
-        $item = $this->items[$this->highlighted];
-        $result = ($this->detailCallback)($item);
-        $this->detailCache[$this->highlighted] = $result;
+        $value = $this->entries[$label];
 
-        return $result;
+        if ($value instanceof Closure) {
+            $lines = $this->captureOutput($value);
+        } elseif (is_array($value) && ! array_is_list($value)) {
+            $lines = $this->formatAssocArray($value);
+        } elseif (is_array($value)) {
+            $lines = $value;
+        } else {
+            $lines = [(string) $value];
+        }
+
+        $this->detailCache[$label] = $lines;
+
+        return $lines;
     }
 
     public function visible(): array
@@ -96,11 +121,62 @@ class SplitBrowser extends Prompt
     public static function browse(
         string $label,
         array $items,
-        Closure $detail,
+        ?OmniHelpers $omni = null,
         int $scroll = 12,
         string $hint = '',
     ): mixed {
-        return (new self($label, $items, $detail, $scroll, $hint))->prompt();
+        return (new self($label, $items, $omni, $scroll, $hint))->prompt();
+    }
+
+    protected function captureOutput(Closure $closure): array
+    {
+        $rightWidth = $this->computeRightPaneWidth();
+
+        $oldColumns = getenv('COLUMNS');
+        putenv('COLUMNS='.$rightWidth);
+
+        $buffer = new BufferedOutput;
+        Renderer::renderUsing($buffer);
+
+        try {
+            $closure($this->omni);
+        } finally {
+            Renderer::renderUsing(null);
+            if ($oldColumns === false) {
+                putenv('COLUMNS');
+            } else {
+                putenv('COLUMNS='.$oldColumns);
+            }
+        }
+
+        $output = $buffer->fetch();
+        if ($output === '') {
+            return [];
+        }
+
+        return explode("\n", rtrim($output, "\n"));
+    }
+
+    protected function formatAssocArray(array $data): array
+    {
+        $keys = array_keys($data);
+        $maxKeyLen = max(array_map(fn ($k) => mb_strwidth((string) $k), $keys));
+
+        $lines = [];
+        foreach ($data as $key => $value) {
+            $paddedKey = str_pad((string) $key, $maxKeyLen);
+            $lines[] = "\e[1m{$paddedKey}\e[0m  {$value}";
+        }
+
+        return $lines;
+    }
+
+    protected function computeRightPaneWidth(): int
+    {
+        $totalWidth = (new Terminal)->getWidth();
+        $leftWidth = max(20, min(50, (int) ($totalWidth * 0.4)));
+
+        return $totalWidth - $leftWidth - 3;
     }
 
     protected function renderTheme(): string
@@ -112,7 +188,7 @@ class SplitBrowser extends Prompt
 
     protected function reduceScrollingToFitTerminal(): void
     {
-        $reserved = 4; // top border + bottom border + hint + buffer
+        $reserved = 4;
 
         $this->scroll = max(1, min($this->scroll, $this->terminal()->lines() - $reserved));
     }

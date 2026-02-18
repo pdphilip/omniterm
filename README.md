@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="https://cdn.snipform.io/pdphilip/omniterm/omni-term-banner.png" alt="OmniTerm" />
+
 # OmniTerm
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/pdphilip/omniterm.svg?style=flat-square)](https://packagist.org/packages/pdphilip/omniterm)

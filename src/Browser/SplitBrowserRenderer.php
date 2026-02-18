@@ -21,7 +21,7 @@ class SplitBrowserRenderer
     {
         $totalWidth = $prompt->terminal()->cols();
         $leftWidth = $this->leftPaneWidth($totalWidth);
-        $rightWidth = $totalWidth - $leftWidth - 3; // 3 border chars: │ │ │
+        $rightWidth = $totalWidth - $leftWidth - 3;
 
         $visible = $prompt->visible();
         $detail = $prompt->detail();
@@ -71,7 +71,7 @@ class SplitBrowserRenderer
             $text = " \e[2m  {$item}\e[0m";
         }
 
-        return $this->pad($text, $width);
+        return $this->fitToWidth($text, $width);
     }
 
     private function renderRightCell(array $detail, int $lineIndex, int $width): string
@@ -82,7 +82,7 @@ class SplitBrowserRenderer
 
         $line = " {$detail[$lineIndex]}";
 
-        return $this->pad($line, $width);
+        return $this->fitToWidth($line, $width);
     }
 
     private function topBorder(string $label, int $leftWidth, int $rightWidth): string
@@ -91,9 +91,7 @@ class SplitBrowserRenderer
         $labelLen = mb_strwidth($labelText);
         $leftFill = max(0, $leftWidth - $labelLen);
 
-        $left = "\e[90m╭{$labelText}".str_repeat('─', $leftFill).'┬'.str_repeat('─', $rightWidth)."╮\e[0m";
-
-        return $left;
+        return "\e[90m╭{$labelText}".str_repeat('─', $leftFill).'┬'.str_repeat('─', $rightWidth)."╮\e[0m";
     }
 
     private function bottomBorder(int $leftWidth, int $rightWidth): string
@@ -108,12 +106,49 @@ class SplitBrowserRenderer
         return max(20, min(50, $width));
     }
 
-    private function pad(string $text, int $width): string
+    private function fitToWidth(string $text, int $width): string
     {
         $visible = mb_strwidth($this->stripAnsi($text));
-        $padding = max(0, $width - $visible);
 
-        return $text.str_repeat(' ', $padding);
+        if ($visible <= $width) {
+            return $text.str_repeat(' ', $width - $visible);
+        }
+
+        return $this->ansiTruncate($text, $width);
+    }
+
+    private function ansiTruncate(string $text, int $maxWidth): string
+    {
+        $visible = 0;
+        $result = '';
+        $i = 0;
+        $bytes = strlen($text);
+
+        while ($i < $bytes && $visible < $maxWidth) {
+            if ($text[$i] === "\e") {
+                $end = strpos($text, 'm', $i);
+                if ($end !== false) {
+                    $result .= substr($text, $i, $end - $i + 1);
+                    $i = $end + 1;
+                } else {
+                    break;
+                }
+            } else {
+                $char = mb_substr(substr($text, $i), 0, 1);
+                $charWidth = mb_strwidth($char);
+                $charBytes = strlen($char);
+
+                if ($visible + $charWidth > $maxWidth) {
+                    break;
+                }
+
+                $result .= $char;
+                $visible += $charWidth;
+                $i += $charBytes;
+            }
+        }
+
+        return $result."\e[0m".str_repeat(' ', max(0, $maxWidth - $visible));
     }
 
     private function stripAnsi(string $text): string

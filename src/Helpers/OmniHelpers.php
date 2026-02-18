@@ -2,7 +2,6 @@
 
 namespace OmniTerm\Helpers;
 
-use Closure;
 use InvalidArgumentException;
 use OmniTerm\Async\LiveTask;
 use OmniTerm\Async\Spinner;
@@ -259,9 +258,9 @@ class OmniHelpers
     // Browser
     // ----------------------------------------------------------------------
 
-    public function browse(string $label, array $items, Closure $detail, int $scroll = 12, string $hint = ''): mixed
+    public function browse(string $label, array $items, int $scroll = 12, string $hint = ''): mixed
     {
-        return SplitBrowser::browse($label, $items, $detail, $scroll, $hint);
+        return SplitBrowser::browse($label, $items, $this, $scroll, $hint);
     }
 
     // ----------------------------------------------------------------------
