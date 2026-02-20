@@ -124,6 +124,11 @@ class OmniTerm
         return new AsyncHtmlRenderer($task);
     }
 
+    public function newLine(int $count = 1): void
+    {
+        echo str_repeat(PHP_EOL, $count);
+    }
+
     // ----------------------------------------------------------------------
     // Elements
     // ----------------------------------------------------------------------

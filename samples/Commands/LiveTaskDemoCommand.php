@@ -17,13 +17,13 @@ class LiveTaskDemoCommand extends Command
     public function handle(): int
     {
         $this->omni->titleBar('Live Tasks', 'fuchsia');
-        $this->newLine();
+        $this->omni->newLine();
 
         // -----------------------------------------------------------------
         // Simple task() — one-liner, no rows
         // -----------------------------------------------------------------
         $this->omni->info('Simple one-shot task:');
-        $this->newLine();
+        $this->omni->newLine();
 
         $result = $this->omni->task('Connecting to database', function () {
             usleep(1500000);
@@ -34,7 +34,7 @@ class LiveTaskDemoCommand extends Command
             ];
         });
 
-        $this->newLine();
+        $this->omni->newLine();
 
         $result = $this->omni->task('Checking external API', function () {
             usleep(2000000);
@@ -45,15 +45,15 @@ class LiveTaskDemoCommand extends Command
             ];
         }, spinner: Spinner::Dots);
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->hrInfo();
-        $this->newLine();
+        $this->omni->newLine();
 
         // -----------------------------------------------------------------
         // liveTask() — with feedback rows, simulating a bulk operation
         // -----------------------------------------------------------------
         $this->omni->info('Live task with feedback rows:');
-        $this->newLine();
+        $this->omni->newLine();
 
         $task = $this->omni->liveTask('Processing records', spinner: Spinner::Dots3)
             ->row('Created', 0, 'text-sky-500')
@@ -82,7 +82,7 @@ class LiveTaskDemoCommand extends Command
 
         $task->finish('Processing complete');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->success('Done!');
 
         return self::SUCCESS;

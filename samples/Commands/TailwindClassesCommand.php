@@ -200,7 +200,7 @@ class TailwindClassesCommand extends Command
         $this->omni->render('<div class="flex"><span class="bg-rose-600 text-rose-100 font-bold px-1">FAIL</span><span class="flex-1 text-zinc-400 px-1 line-through">Redis connection timed out</span><span class="text-zinc-600 text-right w-12">5000ms</span></div>');
         $this->omni->render('<div class="flex"><span class="bg-amber-600 text-amber-100 font-bold px-1">WARN</span><span class="flex-1 text-zinc-400 italic px-1">Cache driver using array fallback</span><span class="text-zinc-600 text-right w-12">0ms</span></div>');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // Boxed header
         $this->omni->render('<div class="flex"><span class="flex-1 text-sky-700 content-repeat-[─]"></span></div>');
@@ -211,14 +211,14 @@ class TailwindClassesCommand extends Command
         $this->omni->render('<div class="flex mx-1"><span class="w-20 text-zinc-500 px-1">Disk</span><span class="flex-1 text-rose-400">89%</span></div>');
         $this->omni->render('<div class="flex"><span class="flex-1 text-sky-700 content-repeat-[─]"></span></div>');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         return Command::SUCCESS;
     }
 
     private function section(string $title): void
     {
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->render('<div class="flex"><span class="text-violet-400 font-bold px-1">'.$title.'</span></div>');
     }
 }

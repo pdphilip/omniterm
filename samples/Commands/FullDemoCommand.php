@@ -18,7 +18,7 @@ class FullDemoCommand extends Command
     {
         // ── Title Bar ──────────────────────────────────────────────────────
         $this->omni->titleBar('OmniTerm Feature Check', 'cyan');
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Inline HTML ────────────────────────────────────────────────────
         $this->omni->render('<div class="px-2"><span class="text-sky-400 font-bold">render()</span> <span class="text-gray-400">— raw HTML to ANSI</span></div>');
@@ -26,7 +26,7 @@ class FullDemoCommand extends Command
         $parsed = $this->omni->parse('<span class="text-emerald-400">parse()</span> returns a string');
         $this->omni->render('<div class="px-2"><span>'.$parsed.'</span></div>');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Feedback Messages ──────────────────────────────────────────────
         $this->omni->success('Success message');
@@ -36,13 +36,13 @@ class FullDemoCommand extends Command
         $this->omni->disabled('Disabled message');
         $this->omni->feedback('Custom feedback', 'DEPLOY', 'violet');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Elements ───────────────────────────────────────────────────────
         $this->omni->box('Square Box', 'text-sky-500', 'text-sky-300');
         $this->omni->roundedBox('Rounded Box', 'text-emerald-500', 'text-emerald-300');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->hr();
         $this->omni->hrSuccess();
@@ -51,7 +51,7 @@ class FullDemoCommand extends Command
         $this->omni->hrError();
         $this->omni->hrDisabled();
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Data Tables ────────────────────────────────────────────────────
         $this->omni->tableHeader('Check', 'Status', 'Details');
@@ -65,7 +65,7 @@ class FullDemoCommand extends Command
         $this->omni->tableRowOk('Health Check');
         $this->omni->tableRowFailed('Queue Worker', 'Not running');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Status Blocks ──────────────────────────────────────────────────
         $this->omni->statusSuccess('Build Passed', 'All 42 tests green', ['Duration: 0.31s']);
@@ -74,11 +74,11 @@ class FullDemoCommand extends Command
         $this->omni->statusError('Deploy Failed', 'Migration error on users table', ['Check: storage/logs/laravel.log']);
         $this->omni->statusDisabled('Cron Inactive', 'Scheduler not running', ['Run: php artisan schedule:work']);
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Progress Bars ──────────────────────────────────────────────────
         $this->omni->info('Progress bars');
-        $this->newLine();
+        $this->omni->newLine();
 
         $total = 50;
         $sleep = 50_000;
@@ -92,7 +92,7 @@ class FullDemoCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Simple with color steps
         $this->omni->divider('Simple with color steps');
@@ -103,7 +103,7 @@ class FullDemoCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Framed with custom color
         $this->omni->divider('Framed with custom color');
@@ -114,7 +114,7 @@ class FullDemoCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Framed with color steps
         $this->omni->divider('Framed with color steps');
@@ -125,7 +125,7 @@ class FullDemoCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Gradient
         $this->omni->divider('Gradient');
@@ -136,7 +136,7 @@ class FullDemoCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Framed gradient with custom colors
         $this->omni->divider('Framed gradient (rose -> sky)');
@@ -147,11 +147,11 @@ class FullDemoCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Spinner Tasks (newLoader + runTask) ────────────────────────────
         $this->omni->info('Spinner tasks');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->newLoader(Spinner::Sand, ['text-amber-500', 'text-emerald-500']);
         $this->omni->runTask('Task with success', function () {
@@ -174,11 +174,11 @@ class FullDemoCommand extends Command
             return ['state' => 'error', 'message' => 'Connection timeout', 'details' => 'After 30s'];
         });
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── LiveTask via task() ────────────────────────────────────────────
         $this->omni->info('LiveTask via task()');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->task('Processing batch job', function () {
             usleep(1_500_000);
@@ -186,11 +186,11 @@ class FullDemoCommand extends Command
             return ['state' => 'success', 'message' => 'Batch complete', 'details' => '500 records'];
         }, Spinner::DotsCircle, ['text-indigo-500', 'text-violet-500']);
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Manual LiveTask with rows ──────────────────────────────────────
         $this->omni->info('Manual LiveTask with rows');
-        $this->newLine();
+        $this->omni->newLine();
 
         $liveTask = $this->omni->liveTask('Syncing data', Spinner::Sand, ['text-sky-500', 'text-emerald-500']);
         $liveTask->row('Users', 0, 'text-sky-500');
@@ -210,7 +210,7 @@ class FullDemoCommand extends Command
 
         $liveTask->finish('Sync complete');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->success('Feature check complete');
 
         return Command::SUCCESS;

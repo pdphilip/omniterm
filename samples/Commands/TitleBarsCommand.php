@@ -25,7 +25,7 @@ class TitleBarsCommand extends Command
 
         foreach ($colors as $color) {
             $this->omni->titleBar($color, $color);
-            $this->newLine();
+            $this->omni->newLine();
         }
 
         return self::SUCCESS;

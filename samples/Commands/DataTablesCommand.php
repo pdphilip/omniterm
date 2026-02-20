@@ -23,7 +23,7 @@ class DataTablesCommand extends Command
     public function handle(): int
     {
         $this->omni->titleBar('Data Tables', 'teal');
-        $this->newLine();
+        $this->omni->newLine();
 
         // Header row
         $this->omni->tableHeader('Setting', 'Value', 'Notes');
@@ -34,9 +34,9 @@ class DataTablesCommand extends Command
         $this->omni->tableRow('Debug Mode', 'false', 'Recommended for production');
         $this->omni->tableRow('Timezone', 'UTC');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->hrInfo();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Status check table
         $this->omni->tableHeader('Service', 'Status');
@@ -55,9 +55,9 @@ class DataTablesCommand extends Command
         $this->omni->tableRowDisabled('Maintenance Mode');
         $this->omni->tableRowInfo('Last Deploy', '2024-01-15 14:30:00');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->hrWarning();
-        $this->newLine();
+        $this->omni->newLine();
 
         // With help text
         $this->omni->tableHeader('Configuration', 'Status');

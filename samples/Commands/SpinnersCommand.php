@@ -24,7 +24,7 @@ class SpinnersCommand extends Command
     public function handle(): int
     {
         $this->omni->titleBar('Spinner Animations', 'amber');
-        $this->newLine();
+        $this->omni->newLine();
 
         $spinners = [
             Spinner::Dots,
@@ -53,18 +53,18 @@ class SpinnersCommand extends Command
         }
 
         $this->omni->roundedBox('Spinner Animations', 'text-cyan-500');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->info('Each spinner will run for ~2 seconds');
-        $this->newLine();
+        $this->omni->newLine();
 
         foreach ($spinners as $spinner) {
             $this->omni->render("<div><span class='text-yellow-400'>{$spinner->value}</span>  - {$spinner->label()}</div>");
         }
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->hrInfo();
-        $this->newLine();
+        $this->omni->newLine();
 
         foreach ($spinners as $spinner) {
             $colors = $this->getColorsForSpinner($spinner);
@@ -83,9 +83,9 @@ class SpinnersCommand extends Command
             usleep(300000);
         }
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->success('All spinner demos complete!');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->render('<div class="text-gray-400">Tip: Run with --type=sand to demo a specific spinner</div>');
 

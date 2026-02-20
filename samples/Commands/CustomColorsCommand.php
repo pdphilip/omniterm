@@ -23,11 +23,11 @@ class CustomColorsCommand extends Command
     public function handle(): int
     {
         $this->omni->titleBar('Custom Colors', 'pink');
-        $this->newLine();
+        $this->omni->newLine();
 
         // Default colors
         $this->omni->info('Default Colors:');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->success('Default success (emerald)');
         $this->omni->error('Default error (rose)');
@@ -35,13 +35,13 @@ class CustomColorsCommand extends Command
         $this->omni->info('Default info (sky)');
         $this->omni->disabled('Default disabled (zinc)');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->hrInfo();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Custom color scheme 1: Purple theme
         $this->omni->info('Purple Theme:');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->successColor = 'violet';
         $this->omni->errorColor = 'fuchsia';
@@ -55,13 +55,13 @@ class CustomColorsCommand extends Command
         $this->omni->info('Purple info (indigo)');
         $this->omni->disabled('Purple disabled (slate)');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->hrInfo();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Custom color scheme 2: Ocean theme
         $this->omni->info('Ocean Theme:');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->successColor = 'teal';
         $this->omni->errorColor = 'red';
@@ -75,13 +75,13 @@ class CustomColorsCommand extends Command
         $this->omni->info('Ocean info (cyan)');
         $this->omni->disabled('Ocean disabled (gray)');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->hrInfo();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Status rows also use these colors
         $this->omni->info('Status rows inherit custom colors:');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->tableHeader('Check', 'Status');
         $this->omni->tableRowSuccess('Teal Success');
@@ -90,18 +90,18 @@ class CustomColorsCommand extends Command
         $this->omni->tableRowInfo('Cyan Info');
         $this->omni->tableRowDisabled('Gray Disabled');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // Direct feedback() bypasses color properties entirely
         $this->omni->info('Direct feedback():');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->feedback('Uses the color you pass directly', 'CUSTOM', 'pink');
         $this->omni->feedback('Unaffected by color properties', 'DEPLOY', 'violet');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->hrInfo();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Reset to defaults
         $this->omni->successColor = 'emerald';

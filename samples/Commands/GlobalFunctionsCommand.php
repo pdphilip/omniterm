@@ -19,22 +19,22 @@ class GlobalFunctionsCommand extends Command
         $height = $this->omni->terminal()->getHeight();
 
         $this->omni->titleBar('Render Functions', 'cyan');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->render('<div class="mx-1"><span class="text-amber-500">Terminal Size:</span> '.$width.' x '.$height.'</div>');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->render('<div class="mx-1 text-sky-500">1. render() - Basic HTML to terminal:</div>');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->render('<div class="mx-2 text-green-500 font-bold">  Bold green text</div>');
         $this->omni->render('<div class="mx-2"><span class="bg-red-600 text-white px-1">ERROR</span> With a badge</div>');
         $this->omni->render('<div class="mx-2"><span class="text-yellow-500">Warning:</span> <span class="text-gray">Some message</span></div>');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->render('<div class="mx-1 text-sky-500">2. render() - Flexbox layouts:</div>');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->render('
             <div class="flex mx-2">
@@ -44,7 +44,7 @@ class GlobalFunctionsCommand extends Command
             </div>
         ');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->render('
             <div class="flex mx-2">
@@ -54,10 +54,10 @@ class GlobalFunctionsCommand extends Command
             </div>
         ');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->render('<div class="mx-1 text-sky-500">3. liveView() - Live updating display:</div>');
-        $this->newLine();
+        $this->omni->newLine();
 
         $live = $this->omni->liveView('<div class="mx-2">  Countdown: <span class="text-amber-500">Starting...</span></div>');
 
@@ -70,10 +70,10 @@ class GlobalFunctionsCommand extends Command
         $live->reRender('<div class="mx-2">  Countdown: <span class="text-emerald-500 font-bold">Done!</span></div>');
         $this->omni->endLiveView();
 
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->render('<div class="mx-1 text-sky-500">4. liveView() - Custom progress:</div>');
-        $this->newLine();
+        $this->omni->newLine();
 
         $live = $this->omni->liveView();
 
@@ -101,7 +101,7 @@ class GlobalFunctionsCommand extends Command
         }
 
         $this->omni->endLiveView();
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->render('<div class="mx-1 text-gray">────────────────────────────────────</div>');
         $this->omni->render('<div class="mx-1 text-emerald-500 font-bold">Render functions demo complete!</div>');

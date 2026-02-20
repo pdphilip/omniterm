@@ -24,10 +24,10 @@ class AsyncTasksCommand extends Command
     public function handle(): int
     {
         $this->omni->titleBar('Async Tasks', 'rose');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->info('Running tasks with different outcomes...');
-        $this->newLine();
+        $this->omni->newLine();
 
         // Task 1: Success
         $this->omni->newLoader(Spinner::Sand, ['text-amber-500', 'text-emerald-500']);
@@ -111,13 +111,13 @@ class AsyncTasksCommand extends Command
             ];
         });
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->hrInfo();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Using result data
         $this->omni->info('Task results can be used in your code:');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->newLoader(Spinner::Sand);
 
@@ -135,7 +135,7 @@ class AsyncTasksCommand extends Command
             ];
         });
 
-        $this->newLine();
+        $this->omni->newLine();
 
         if ($result && ! empty($result->data)) {
             $this->omni->tableHeader('Metric', 'Value');
@@ -144,7 +144,7 @@ class AsyncTasksCommand extends Command
             $this->omni->tableRow('Maximum', (string) $result->data['max']);
         }
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->success('Async tasks demo complete!');
 
         return Command::SUCCESS;

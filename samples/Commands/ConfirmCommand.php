@@ -23,11 +23,11 @@ class ConfirmCommand extends Command
     public function handle(): int
     {
         $this->omni->titleBar('Confirm Dialog', 'sky');
-        $this->newLine();
+        $this->omni->newLine();
 
         // Basic confirm - success
         $this->omni->divider('Basic confirm (press y to proceed):');
-        $this->newLine();
+        $this->omni->newLine();
 
         $result = $this->omni->confirm('Run database migrations?', function () {
             usleep(2_000_000);
@@ -35,7 +35,7 @@ class ConfirmCommand extends Command
             // etc
         });
 
-        $this->newLine();
+        $this->omni->newLine();
 
         if ($result) {
             $this->omni->statusSuccess('Confirmed', 'Migrations ran successfully');
@@ -43,12 +43,12 @@ class ConfirmCommand extends Command
             $this->omni->disabled('Skipped');
         }
 
-        $this->newLine();
-        $this->newLine();
+        $this->omni->newLine();
+        $this->omni->newLine();
 
         // Warning outcome
         $this->omni->divider('Confirm with warning outcome:');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->confirm('Rebuild search index?', function () {
             $this->omni->info('Rebuilding index...');
@@ -56,12 +56,12 @@ class ConfirmCommand extends Command
             $this->omni->warning('Index rebuilt with 12 skipped records');
         });
 
-        $this->newLine();
-        $this->newLine();
+        $this->omni->newLine();
+        $this->omni->newLine();
 
         // Error outcome
         $this->omni->divider('Confirm with error outcome:');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->confirm('Sync to remote cluster?', function () {
             $this->omni->info('Connecting...');
@@ -69,12 +69,12 @@ class ConfirmCommand extends Command
             $this->omni->error('Connection refused on port 9200');
         });
 
-        $this->newLine();
-        $this->newLine();
+        $this->omni->newLine();
+        $this->omni->newLine();
 
         // Custom colors
         $this->omni->divider('Confirm with custom colors (sky/amber):');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->confirm('Deploy to staging?', function () {
             $this->omni->info('Deploying v2.4.1...');
@@ -82,7 +82,7 @@ class ConfirmCommand extends Command
             $this->omni->success('Deployed to staging');
         }, confirmColor: 'sky', declineColor: 'amber');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->success('Confirm demo complete!');
 
         return Command::SUCCESS;

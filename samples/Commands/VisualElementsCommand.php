@@ -23,66 +23,66 @@ class VisualElementsCommand extends Command
     public function handle(): int
     {
         $this->omni->titleBar('Visual Elements', 'violet');
-        $this->newLine();
+        $this->omni->newLine();
 
         // Rounded boxes (default style)
         $this->omni->roundedBox('Rounded Box - Default');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->roundedBox('Rounded Box - Styled', 'text-cyan-500', 'text-cyan-300');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->roundedBox('Success Box', 'text-emerald-500', 'text-emerald-300');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->roundedBox('Warning Box', 'text-amber-500', 'text-amber-300');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // Square boxes
         $this->omni->box('Square Box - Default');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->box('Square Box - Styled', 'text-rose-500', 'text-rose-300');
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // Horizontal rules
         $this->omni->info('Horizontal Rules:');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->line('  Default (gray):');
         $this->omni->hr();
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->line('  Custom color:');
         $this->omni->hr('text-purple-500');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->line('  Success (green):');
         $this->omni->hrSuccess();
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->line('  Error (red):');
         $this->omni->hrError();
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->line('  Warning (amber):');
         $this->omni->hrWarning();
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->line('  Info (blue):');
         $this->omni->hrInfo();
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->line('  Disabled (gray):');
         $this->omni->hrDisabled();
 
-        $this->newLine();
+        $this->omni->newLine();
 
         // Combined example
         $this->omni->roundedBox('Section Title', 'text-sky-500', 'text-white');

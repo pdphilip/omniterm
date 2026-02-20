@@ -24,7 +24,7 @@ class BrowserDemoCommand extends Command
     public function handle(): int
     {
         $this->omni->titleBar('Split Browser', 'orange');
-        $this->newLine();
+        $this->omni->newLine();
 
         $servers = [
             'web-01' => function (OmniTerm $omni) {
@@ -75,7 +75,7 @@ class BrowserDemoCommand extends Command
 
         $selected = $this->omni->browse('Server Dashboard', $servers);
 
-        $this->newLine();
+        $this->omni->newLine();
 
         if ($selected === null) {
             $this->line('No server selected.');

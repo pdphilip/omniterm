@@ -23,14 +23,14 @@ class InteractiveCommand extends Command
     public function handle(): int
     {
         $this->omni->titleBar('Interactive Prompts', 'indigo');
-        $this->newLine();
+        $this->omni->newLine();
 
         // Simple question
         $name = $this->omni->ask('What is your name?');
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->tableRow('You entered', $name ?: '(empty)');
-        $this->newLine();
+        $this->omni->newLine();
 
         // Question with autocomplete options
         $framework = $this->omni->ask('What is your favorite PHP framework?', [
@@ -41,10 +41,10 @@ class InteractiveCommand extends Command
             'Yii',
             'Laminas',
         ]);
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->tableRow('You chose', $framework ?: '(empty)');
-        $this->newLine();
+        $this->omni->newLine();
 
         // Another example with colors
         $color = $this->omni->ask('Pick a color:', [
@@ -55,15 +55,15 @@ class InteractiveCommand extends Command
             'purple',
             'orange',
         ]);
-        $this->newLine();
+        $this->omni->newLine();
 
         if ($color) {
             $this->omni->tableRow('Your color', $color, null, "text-{$color}-500");
         }
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->hrInfo();
-        $this->newLine();
+        $this->omni->newLine();
 
         // Summary
         $this->omni->tableHeader('Question', 'Your Answer');
@@ -71,7 +71,7 @@ class InteractiveCommand extends Command
         $this->omni->tableRow('Framework', $framework ?: '(not provided)');
         $this->omni->tableRow('Color', $color ?: '(not provided)');
 
-        $this->newLine();
+        $this->omni->newLine();
         $this->omni->success('Interactive demo complete!');
 
         return Command::SUCCESS;

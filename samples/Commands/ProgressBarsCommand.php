@@ -23,7 +23,7 @@ class ProgressBarsCommand extends Command
     public function handle(): int
     {
         $this->omni->titleBar('Progress Bars', 'emerald');
-        $this->newLine();
+        $this->omni->newLine();
 
         $total = 50;
         $sleep = 50_000;
@@ -37,7 +37,7 @@ class ProgressBarsCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Simple with color steps ──────────────────────────────────────
         $this->omni->divider('Simple with color steps');
@@ -48,7 +48,7 @@ class ProgressBarsCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Simple with custom color ─────────────────────────────────────
         $this->omni->divider('Simple with custom color');
@@ -59,7 +59,7 @@ class ProgressBarsCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Framed with custom color ─────────────────────────────────────
         $this->omni->divider('Framed with custom color');
@@ -70,7 +70,7 @@ class ProgressBarsCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Framed with color steps ──────────────────────────────────────
         $this->omni->divider('Framed with color steps');
@@ -81,7 +81,7 @@ class ProgressBarsCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Framed with custom step colors ───────────────────────────────
         $this->omni->divider('Framed with custom step colors');
@@ -92,7 +92,7 @@ class ProgressBarsCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Gradient ─────────────────────────────────────────────────────
         $this->omni->divider('Gradient');
@@ -103,7 +103,7 @@ class ProgressBarsCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Framed gradient with custom colors ───────────────────────────
         $this->omni->divider('Framed gradient (rose → sky)');
@@ -114,7 +114,7 @@ class ProgressBarsCommand extends Command
             $bar->advance();
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         // ── Variable increment ───────────────────────────────────────────
         $this->omni->divider('Variable increment');
@@ -126,7 +126,7 @@ class ProgressBarsCommand extends Command
             $bar->advance($increment);
         }
         $bar->finish();
-        $this->newLine();
+        $this->omni->newLine();
 
         $this->omni->success('All progress bar demos complete!');
 

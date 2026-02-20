@@ -30,7 +30,7 @@ class ConfirmTask
         }
 
         $renderer->reRenderView('omniterm::confirm', $this->viewData('confirmed'));
-
+        $this->omni->newLine();
         $result = ($this->callback)();
 
         $this->omni->hr("text-{$this->confirmColor}-500");
