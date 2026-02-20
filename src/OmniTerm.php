@@ -292,29 +292,34 @@ class OmniTerm
     // Feedback titles
     // ----------------------------------------------------------------------
 
-    public function error(string $message): void
+    public function error(string $message, string $title = 'ERROR'): void
     {
-        $this->outputHtml($this->renderView('omniterm::status.error', ['message' => $message, 'color' => $this->errorColor]));
+        $this->feedback($message, $title, $this->errorColor);
     }
 
-    public function success(string $message = 'ok'): void
+    public function success(string $message = 'ok', string $title = 'GOOD'): void
     {
-        $this->outputHtml($this->renderView('omniterm::status.success', ['message' => $message, 'color' => $this->successColor]));
+        $this->feedback($message, $title, $this->successColor);
     }
 
-    public function warning(string $message): void
+    public function warning(string $message, string $title = 'WARNING'): void
     {
-        $this->outputHtml($this->renderView('omniterm::status.warning', ['message' => $message, 'color' => $this->warningColor]));
+        $this->feedback($message, $title, $this->warningColor);
     }
 
-    public function info(string $message): void
+    public function info(string $message, string $title = 'INFO'): void
     {
-        $this->outputHtml($this->renderView('omniterm::status.info', ['message' => $message, 'color' => $this->infoColor]));
+        $this->feedback($message, $title, $this->infoColor);
     }
 
-    public function disabled(string $message): void
+    public function disabled(string $message, string $title = 'DISABLED'): void
     {
-        $this->outputHtml($this->renderView('omniterm::status.disabled', ['message' => $message, 'color' => $this->disabledColor]));
+        $this->feedback($message, $title, $this->disabledColor);
+    }
+
+    public function feedback(string $message, string $title, string $color = 'sky'): void
+    {
+        $this->outputHtml($this->renderView('omniterm::status.feedback', compact('message', 'color', 'title')));
     }
 
     // ----------------------------------------------------------------------

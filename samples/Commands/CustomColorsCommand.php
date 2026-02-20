@@ -92,6 +92,17 @@ class CustomColorsCommand extends Command
 
         $this->newLine();
 
+        // Direct feedback() bypasses color properties entirely
+        $this->omni->info('Direct feedback():');
+        $this->newLine();
+
+        $this->omni->feedback('Uses the color you pass directly', 'CUSTOM', 'pink');
+        $this->omni->feedback('Unaffected by color properties', 'DEPLOY', 'violet');
+
+        $this->newLine();
+        $this->omni->hrInfo();
+        $this->newLine();
+
         // Reset to defaults
         $this->omni->successColor = 'emerald';
         $this->omni->errorColor = 'rose';

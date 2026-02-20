@@ -25,12 +25,29 @@ class StatusMessagesCommand extends Command
         $this->omni->titleBar('Status Messages', 'sky');
         $this->newLine();
 
-        // Simple status messages
+        // Simple feedback messages
         $this->omni->success('Operation completed successfully');
         $this->omni->error('Something went wrong');
         $this->omni->warning('Proceed with caution');
         $this->omni->info('Here is some information');
         $this->omni->disabled('This feature is disabled');
+
+        $this->newLine();
+        $this->omni->hrInfo();
+        $this->newLine();
+
+        // Custom title overrides
+        $this->omni->success('All 42 tests passed', 'TESTS');
+        $this->omni->error('Port 9200 unreachable', 'ELASTIC');
+        $this->omni->info('v5.4.0 available', 'UPDATE');
+
+        $this->newLine();
+        $this->omni->hrInfo();
+        $this->newLine();
+
+        // Generic feedback with any color
+        $this->omni->feedback('Custom message with any color', 'CUSTOM', 'violet');
+        $this->omni->feedback('Another custom feedback', 'DEPLOY', 'cyan');
 
         $this->newLine();
         $this->omni->hrInfo();

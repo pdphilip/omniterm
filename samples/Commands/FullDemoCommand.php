@@ -34,6 +34,7 @@ class FullDemoCommand extends Command
         $this->omni->warning('Warning message');
         $this->omni->error('Error message');
         $this->omni->disabled('Disabled message');
+        $this->omni->feedback('Custom feedback', 'DEPLOY', 'violet');
 
         $this->newLine();
 
