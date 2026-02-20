@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OmniTerm;
 
 use InvalidArgumentException;
@@ -20,7 +22,7 @@ use Symfony\Component\Console\Question\Question;
 
 class OmniTerm
 {
-    public mixed $progressInstance;
+    public ?ProgressBar $progressInstance = null;
 
     protected ?SpinnerTask $spinnerTask = null;
 
@@ -126,7 +128,7 @@ class OmniTerm
     // Elements
     // ----------------------------------------------------------------------
 
-    public function divider(string $label, string $color = 'text-stone-400')
+    public function divider(string $label, string $color = 'text-stone-400'): void
     {
         $this->outputHtml($this->renderView('omniterm::elements.divider', ['label' => $label, 'color' => $color]));
     }
@@ -138,17 +140,17 @@ class OmniTerm
         $this->outputHtml($this->renderView('omniterm::elements.title-bar', ['t' => '', 'color' => $color]));
     }
 
-    public function box($title, $borderColor = 'text-gray', $textColor = 'text-gray'): void
+    public function box(string $title, string $borderColor = 'text-gray', string $textColor = 'text-gray'): void
     {
         $this->outputHtml($this->renderView('omniterm::elements.box', ['title' => $title, 'borderColor' => $borderColor, 'textColor' => $textColor, 'type' => 'square']));
     }
 
-    public function roundedBox($title, $borderColor = 'text-gray', $textColor = 'text-gray'): void
+    public function roundedBox(string $title, string $borderColor = 'text-gray', string $textColor = 'text-gray'): void
     {
         $this->outputHtml($this->renderView('omniterm::elements.box', ['title' => $title, 'borderColor' => $borderColor, 'textColor' => $textColor, 'type' => 'rounded']));
     }
 
-    public function hr($color = 'text-gray'): void
+    public function hr(string $color = 'text-gray'): void
     {
         $this->outputHtml($this->renderView('omniterm::elements.hr', ['color' => $color]));
     }
@@ -182,57 +184,57 @@ class OmniTerm
     // Data tables
     // ----------------------------------------------------------------------
 
-    public function tableHeader($keyName, $valueName, $detailsName = null): void
+    public function tableHeader(string $keyName, string $valueName, ?string $detailsName = null): void
     {
         $this->outputHtml($this->renderView('omniterm::elements.header-row', ['keyName' => $keyName, 'valueName' => $valueName, 'detailsName' => $detailsName]));
     }
 
-    public function tableRow($key, $value, $details = null, $valueClass = null, $help = []): void
+    public function tableRow(string $key, string $value, ?string $details = null, ?string $valueClass = null, array $help = []): void
     {
         $this->outputHtml($this->renderView('omniterm::elements.data-row', ['key' => $key, 'value' => $value, 'details' => $details, 'help' => $help, 'class' => $valueClass, 'statusColors' => $this->statusColors()]));
     }
 
-    public function tableRowSuccess($key, $details = null, $help = []): void
+    public function tableRowSuccess(string $key, ?string $details = null, array $help = []): void
     {
         $this->tableRowAsStatus($key, 'success', $details, $help);
     }
 
-    public function tableRowEnabled($key, $details = null, $help = []): void
+    public function tableRowEnabled(string $key, ?string $details = null, array $help = []): void
     {
         $this->tableRowAsStatus($key, 'enabled', $details, $help);
     }
 
-    public function tableRowDisabled($key, $details = null, $help = []): void
+    public function tableRowDisabled(string $key, ?string $details = null, array $help = []): void
     {
         $this->tableRowAsStatus($key, 'disabled', $details, $help);
     }
 
-    public function tableRowWarning($key, $details = null, $help = []): void
+    public function tableRowWarning(string $key, ?string $details = null, array $help = []): void
     {
         $this->tableRowAsStatus($key, 'warning', $details, $help);
     }
 
-    public function tableRowError($key, $details = null, $help = []): void
+    public function tableRowError(string $key, ?string $details = null, array $help = []): void
     {
         $this->tableRowAsStatus($key, 'error', $details, $help);
     }
 
-    public function tableRowInfo($key, $details = null, $help = []): void
+    public function tableRowInfo(string $key, ?string $details = null, array $help = []): void
     {
         $this->tableRowAsStatus($key, 'info', $details, $help);
     }
 
-    public function tableRowOk($key, $details = null, $help = []): void
+    public function tableRowOk(string $key, ?string $details = null, array $help = []): void
     {
         $this->tableRowAsStatus($key, 'ok', $details, $help);
     }
 
-    public function tableRowFailed($key, $details = null, $help = []): void
+    public function tableRowFailed(string $key, ?string $details = null, array $help = []): void
     {
         $this->tableRowAsStatus($key, 'failed', $details, $help);
     }
 
-    public function tableRowAsStatus($key, $status, $details = null, $help = []): void
+    public function tableRowAsStatus(string $key, string $status, ?string $details = null, array $help = []): void
     {
         $this->outputHtml($this->renderView('omniterm::elements.data-row-status', ['key' => $key, 'status' => $status, 'details' => $details, 'help' => $help, 'statusColors' => $this->statusColors()]));
     }
@@ -241,7 +243,7 @@ class OmniTerm
     // ASK
     // ----------------------------------------------------------------------
 
-    public function ask($question, $options = []): mixed
+    public function ask(string $question, array $options = []): mixed
     {
         $html = $this->renderView('omniterm::elements.question', ['question' => $question, 'options' => $options]);
         (new Renderer)->render($html);
@@ -290,27 +292,27 @@ class OmniTerm
     // Feedback titles
     // ----------------------------------------------------------------------
 
-    public function error($message): void
+    public function error(string $message): void
     {
         $this->outputHtml($this->renderView('omniterm::status.error', ['message' => $message, 'color' => $this->errorColor]));
     }
 
-    public function success($message = 'ok'): void
+    public function success(string $message = 'ok'): void
     {
         $this->outputHtml($this->renderView('omniterm::status.success', ['message' => $message, 'color' => $this->successColor]));
     }
 
-    public function warning($message): void
+    public function warning(string $message): void
     {
         $this->outputHtml($this->renderView('omniterm::status.warning', ['message' => $message, 'color' => $this->warningColor]));
     }
 
-    public function info($message): void
+    public function info(string $message): void
     {
         $this->outputHtml($this->renderView('omniterm::status.info', ['message' => $message, 'color' => $this->infoColor]));
     }
 
-    public function disabled($message): void
+    public function disabled(string $message): void
     {
         $this->outputHtml($this->renderView('omniterm::status.disabled', ['message' => $message, 'color' => $this->disabledColor]));
     }
@@ -360,7 +362,7 @@ class OmniTerm
         return $this->progressInstance;
     }
 
-    public function createProgressBar($total, $withColors = true): void
+    public function createProgressBar(int $total, bool $withColors = true): void
     {
         $bar = $this->progressBar($total)->framed();
         if ($withColors) {
@@ -368,17 +370,17 @@ class OmniTerm
         }
     }
 
-    public function createGradientProgressBar($total): void
+    public function createGradientProgressBar(int $total): void
     {
         $this->progressBar($total)->gradient();
     }
 
-    public function createGradientFramedProgressBar($total): void
+    public function createGradientFramedProgressBar(int $total): void
     {
         $this->progressBar($total)->framed()->gradient();
     }
 
-    public function createSimpleProgressBar($total, $withColors = true): void
+    public function createSimpleProgressBar(int $total, bool $withColors = true): void
     {
         $bar = $this->progressBar($total);
         if ($withColors) {
@@ -388,15 +390,15 @@ class OmniTerm
 
     public function showProgress(): void
     {
-        if (empty($this->progressInstance)) {
+        if ($this->progressInstance === null) {
             $this->omniError('showProgress()', 'No progress bar instance found', 'Call progressBar() first');
         }
         $this->progressInstance->start();
     }
 
-    public function progressAdvance($by = 1): void
+    public function progressAdvance(int $by = 1): void
     {
-        if (empty($this->progressInstance)) {
+        if ($this->progressInstance === null) {
             $this->omniError('progressAdvance()', 'No progress bar instance found', 'Call progressBar() first');
         }
         $this->progressInstance->advance($by);
@@ -404,7 +406,7 @@ class OmniTerm
 
     public function progressFinish(): void
     {
-        if (empty($this->progressInstance)) {
+        if ($this->progressInstance === null) {
             $this->omniError('progressFinish()', 'No progress bar instance found', 'Call progressBar() first');
         }
         $this->progressInstance->finish();

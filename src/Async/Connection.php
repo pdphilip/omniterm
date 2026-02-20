@@ -65,13 +65,13 @@ final class Connection
 
             $length = strlen($payload);
 
-            $amountOfBytesSent = socket_write($this->socket, $payload, $length);
+            $bytesSent = socket_write($this->socket, $payload, $length);
 
-            if ($amountOfBytesSent === false || $amountOfBytesSent === $length) {
+            if ($bytesSent === false || $bytesSent === $length) {
                 break;
             }
 
-            $payload = substr($payload, $amountOfBytesSent);
+            $payload = substr($payload, $bytesSent);
         }
 
         return $this;
@@ -79,16 +79,12 @@ final class Connection
 
     public function read(): Generator
     {
-
         socket_set_nonblock($this->socket);
 
         while (true) {
             $read = [$this->socket];
-
             $write = null;
-
             $except = null;
-
             $selectResult = socket_select($read, $write, $except, $this->timeoutSeconds, $this->timeoutMicroseconds);
 
             if ($selectResult === false) {

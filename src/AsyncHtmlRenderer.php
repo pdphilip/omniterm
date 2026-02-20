@@ -80,18 +80,12 @@ final class AsyncHtmlRenderer
     public function executeSync(callable $render): mixed
     {
         $this->isRunning = true;
-        // Render first time
         $this->renderSync($render);
-        // Execute
         $output = ($this->task)();
         $this->isRunning = false;
-        // Render again
         $this->renderSync($render);
-        if ($output) {
-            return $output;
-        }
 
-        return true;
+        return $output ?: true;
     }
 
     private function renderSync(callable $render): void

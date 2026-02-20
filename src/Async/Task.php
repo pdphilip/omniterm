@@ -88,13 +88,13 @@ final class Task
     {
         $this->output .= $this->connection->read()->current();
 
-        $status = pcntl_waitpid($this->pid(), $status, WNOHANG | WUNTRACED);
+        $result = pcntl_waitpid($this->pid(), $exitStatus, WNOHANG | WUNTRACED);
 
-        if ($status === $this->pid) {
+        if ($result === $this->pid) {
             return true;
         }
 
-        if ($status !== 0) {
+        if ($result !== 0) {
             throw new TaskException('Could not manage async task');
         }
 

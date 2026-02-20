@@ -45,32 +45,37 @@ class ConfirmTask
 
     private function readConfirmation(): bool
     {
-        $stty = @shell_exec('stty -g');
+        $savedState = $this->enableRawMode();
 
-        if ($stty === null || trim($stty) === '') {
+        if ($savedState === null) {
             return $this->readWithEnter();
         }
 
-        $stty = trim($stty);
-        @system('stty -icanon -echo');
-
         try {
-            while (true) {
-                $char = fread(STDIN, 1);
-                if ($char === false || $char === '') {
-                    return false;
-                }
-
-                $lower = strtolower($char);
-                if ($lower === 'y') {
-                    return true;
-                }
-                if ($lower === 'n' || ord($char) === 27) {
-                    return false;
-                }
-            }
+            return $this->waitForYesOrNo();
         } finally {
-            @system("stty '{$stty}'");
+            $this->restoreTerminal($savedState);
+        }
+    }
+
+    private function waitForYesOrNo(): bool
+    {
+        while (true) {
+            $char = fread(STDIN, 1);
+
+            if ($char === false || $char === '') {
+                return false;
+            }
+
+            $lower = strtolower($char);
+
+            if ($lower === 'y') {
+                return true;
+            }
+
+            if ($lower === 'n' || $char === "\e") {
+                return false;
+            }
         }
     }
 
@@ -79,6 +84,33 @@ class ConfirmTask
         $line = trim(fgets(STDIN) ?: '');
 
         return in_array(strtolower($line), ['y', 'yes']);
+    }
+
+    // ------------------------------------------------------------------
+    // Terminal Raw Mode
+    // ------------------------------------------------------------------
+
+    // Switches STDIN to raw mode so fread() returns each keypress
+    // immediately without waiting for Enter, and without echoing.
+    // Returns the saved terminal state for restoreTerminal(), or
+    // null if raw mode is unavailable (e.g. piped input, Windows).
+
+    private function enableRawMode(): ?string
+    {
+        $state = @shell_exec('stty -g');
+
+        if ($state === null || trim($state) === '') {
+            return null;
+        }
+
+        @system('stty -icanon -echo');
+
+        return trim($state);
+    }
+
+    private function restoreTerminal(string $state): void
+    {
+        @system("stty '{$state}'");
     }
 
     // ------------------------------------------------------------------

@@ -67,7 +67,9 @@ class LiveTask
             return false;
         }
 
-        $taskResult = TaskResult::fromArray($result, $this->title.' completed');
+        $taskResult = is_array($result)
+            ? TaskResult::fromArray($result, $this->title.' completed')
+            : TaskResult::success($this->title.' completed');
 
         match ($taskResult->state) {
             'error' => $this->finishWithError($taskResult->message),

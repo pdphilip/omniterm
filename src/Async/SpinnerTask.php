@@ -36,7 +36,10 @@ class SpinnerTask
             return false;
         }
 
-        $taskResult = TaskResult::fromArray($result, $title.' completed');
+        $taskResult = is_array($result)
+            ? TaskResult::fromArray($result, $title.' completed')
+            : TaskResult::success($title.' completed');
+
         $this->renderFinished($taskResult->state, $taskResult->message, $taskResult->details);
 
         return $taskResult;

@@ -32,6 +32,7 @@ class ProgressBar
 
     public function __construct(protected int $total)
     {
+        $this->total = max(1, $total);
         $this->renderer = new LiveHtmlRenderer;
         $this->screenWidth = $this->renderer->getScreenWidth();
     }

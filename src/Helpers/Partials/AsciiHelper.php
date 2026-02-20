@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OmniTerm\Helpers\Partials;
 
 class AsciiHelper
 {
-    public static function roundedBox()
+    public static function roundedBox(): array
     {
         return [
             'tl' => '╭',
@@ -18,7 +20,7 @@ class AsciiHelper
         ];
     }
 
-    public static function squareBox()
+    public static function squareBox(): array
     {
         return [
             'tl' => '┌',
@@ -32,11 +34,10 @@ class AsciiHelper
         ];
     }
 
-    public static function progressBarDimensions($screenWidth, $maxValue)
+    public static function progressBarDimensions(int $screenWidth, int $maxValue): array
     {
-        $maxValue = number_format($maxValue);
-        $maxValueAsString = (string) $maxValue;
-        $valuesWidth = (strlen($maxValueAsString) * 2) + 6;
+        $formatted = number_format($maxValue);
+        $valuesWidth = (strlen($formatted) * 2) + 6;
 
         return [
             'length' => $screenWidth - ($valuesWidth * 2) - 10,
@@ -44,14 +45,14 @@ class AsciiHelper
         ];
     }
 
-    public static function getSpinnerTypes()
+    public static function getSpinnerTypes(): array
     {
         return array_keys(self::$spinners);
     }
 
-    public static function loadSpinner($key): array
+    public static function loadSpinner(string $key): array
     {
-        return self::$spinners[$key]['frames'];
+        return self::$spinners[$key]['frames'] ?? [];
     }
 
     public static array $spinners = [
