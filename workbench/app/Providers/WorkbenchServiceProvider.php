@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use OmniTerm\Samples\AsyncTasksCommand;
 use OmniTerm\Samples\BrowserDemoCommand;
+use OmniTerm\Samples\ConfirmCommand;
 use OmniTerm\Samples\CustomColorsCommand;
 use OmniTerm\Samples\DataTablesCommand;
 use OmniTerm\Samples\FullDemoCommand;
@@ -52,6 +53,7 @@ class WorkbenchServiceProvider extends ServiceProvider
                 TailwindClassesCommand::class,
                 TitleBarsCommand::class,
                 VisualElementsCommand::class,
+                ConfirmCommand::class,
             ]);
         }
     }

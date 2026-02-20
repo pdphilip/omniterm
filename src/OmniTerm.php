@@ -3,6 +3,7 @@
 namespace OmniTerm;
 
 use InvalidArgumentException;
+use OmniTerm\Async\ConfirmTask;
 use OmniTerm\Async\LiveTask;
 use OmniTerm\Async\Spinner;
 use OmniTerm\Async\SpinnerTask;
@@ -260,6 +261,15 @@ class OmniTerm
     public function browse(string $label, array $items, int $scroll = 12, string $hint = ''): mixed
     {
         return SplitBrowser::browse($label, $items, $this, $scroll, $hint);
+    }
+
+    // ----------------------------------------------------------------------
+    // Confirm
+    // ----------------------------------------------------------------------
+
+    public function confirm(string $question, callable $callback, string $confirmColor = 'emerald', string $declineColor = 'rose'): mixed
+    {
+        return (new ConfirmTask($question, $callback(...), $this, $confirmColor, $declineColor))->run();
     }
 
     // ----------------------------------------------------------------------
