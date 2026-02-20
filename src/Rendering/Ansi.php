@@ -53,13 +53,34 @@ final class Ansi
         return "\e[1m";
     }
 
+    public static function italic(): string
+    {
+        return "\e[3m";
+    }
+
+    public static function underline(): string
+    {
+        return "\e[4m";
+    }
+
+    public static function strikethrough(): string
+    {
+        return "\e[9m";
+    }
+
     public static function reset(): string
     {
         return "\e[0m";
     }
 
-    public static function buildPrefix(?array $textColor, ?array $bgColor, bool $bold): string
-    {
+    public static function buildPrefix(
+        ?array $textColor,
+        ?array $bgColor,
+        bool $bold,
+        bool $italic = false,
+        bool $underline = false,
+        bool $lineThrough = false,
+    ): string {
         $prefix = '';
         if ($textColor) {
             $prefix .= Colors::fgFromRgb($textColor);
@@ -70,13 +91,29 @@ final class Ansi
         if ($bold) {
             $prefix .= self::bold();
         }
+        if ($italic) {
+            $prefix .= self::italic();
+        }
+        if ($underline) {
+            $prefix .= self::underline();
+        }
+        if ($lineThrough) {
+            $prefix .= self::strikethrough();
+        }
 
         return $prefix;
     }
 
-    public static function wrap(string $content, ?array $textColor, ?array $bgColor, bool $bold): string
-    {
-        $prefix = self::buildPrefix($textColor, $bgColor, $bold);
+    public static function wrap(
+        string $content,
+        ?array $textColor,
+        ?array $bgColor,
+        bool $bold,
+        bool $italic = false,
+        bool $underline = false,
+        bool $lineThrough = false,
+    ): string {
+        $prefix = self::buildPrefix($textColor, $bgColor, $bold, $italic, $underline, $lineThrough);
         if ($prefix === '') {
             return $content;
         }
@@ -86,7 +123,44 @@ final class Ansi
 
     public static function wrapInherited(string $content, array $inherited): string
     {
-        return self::wrap($content, $inherited['textColor'] ?? null, null, $inherited['bold'] ?? false);
+        return self::wrap(
+            $content,
+            $inherited['textColor'] ?? null,
+            null,
+            $inherited['bold'] ?? false,
+            $inherited['italic'] ?? false,
+            $inherited['underline'] ?? false,
+            $inherited['lineThrough'] ?? false,
+        );
+    }
+
+    public static function transformText(string $text, ?string $transform): string
+    {
+        return match ($transform) {
+            'uppercase' => mb_strtoupper($text),
+            'lowercase' => mb_strtolower($text),
+            'capitalize' => mb_convert_case($text, MB_CASE_TITLE),
+            'snakecase' => strtolower(preg_replace('/\s+/', '_', trim($text))),
+            default => $text,
+        };
+    }
+
+    public static function truncate(string $text, int $width): string
+    {
+        if ($width <= 0) {
+            return '';
+        }
+        if (self::visibleLength($text) <= $width) {
+            return $text;
+        }
+
+        // Strip ANSI, truncate plain text, add ellipsis
+        $plain = preg_replace('/\e\[[0-9;]*m/', '', $text);
+        if ($width <= 1) {
+            return mb_substr($plain, 0, $width);
+        }
+
+        return mb_substr($plain, 0, $width - 1).'…';
     }
 
     public static function styledSpaces(int $count, ?array $bgColor): string

@@ -16,6 +16,16 @@ class ElementStyle
 
     public readonly bool $bold;
 
+    public readonly bool $italic;
+
+    public readonly bool $underline;
+
+    public readonly bool $lineThrough;
+
+    public readonly ?string $textTransform;
+
+    public readonly bool $truncate;
+
     public readonly ?array $textColor;
 
     public readonly ?array $bgColor;
@@ -24,7 +34,17 @@ class ElementStyle
 
     public readonly ?int $w;
 
+    public readonly ?int $minW;
+
+    public readonly ?int $maxW;
+
+    public readonly bool $wFull;
+
+    public readonly bool $wAuto;
+
     public readonly int $spaceX;
+
+    public readonly int $spaceY;
 
     public readonly ?string $contentRepeat;
 
@@ -42,6 +62,20 @@ class ElementStyle
 
     public readonly int $pr;
 
+    public readonly int $pt;
+
+    public readonly int $pb;
+
+    public readonly bool $block;
+
+    public readonly bool $hidden;
+
+    public readonly bool $invisible;
+
+    public readonly ?string $justify;
+
+    public readonly ?string $listStyle;
+
     public readonly array $merged;
 
     public function __construct(DOMElement $el, array $inherited, ClassParser $parser)
@@ -55,9 +89,20 @@ class ElementStyle
         $this->bgColor = $raw['bgColor'];
         $this->gradient = $raw['gradient'];
         $this->w = $raw['w'];
+        $this->minW = $raw['minW'];
+        $this->maxW = $raw['maxW'];
+        $this->wFull = $raw['wFull'];
+        $this->wAuto = $raw['wAuto'];
         $this->spaceX = $raw['spaceX'];
+        $this->spaceY = $raw['spaceY'];
         $this->contentRepeat = $raw['contentRepeat'];
         $this->align = $parser->resolveAlignment($raw);
+        $this->truncate = $raw['truncate'];
+        $this->block = $raw['block'];
+        $this->hidden = $raw['hidden'];
+        $this->invisible = $raw['invisible'];
+        $this->justify = $raw['justify'];
+        $this->listStyle = $raw['listStyle'];
 
         $this->ml = $spacing['ml'];
         $this->mr = $spacing['mr'];
@@ -65,30 +110,48 @@ class ElementStyle
         $this->mb = $spacing['mb'];
         $this->pl = $spacing['pl'];
         $this->pr = $spacing['pr'];
+        $this->pt = $spacing['pt'];
+        $this->pb = $spacing['pb'];
 
         $this->merged = $parser->mergeInherited($inherited, $raw);
         $this->textColor = $this->merged['textColor'];
         $this->bold = $this->merged['bold'];
+        $this->italic = $this->merged['italic'];
+        $this->underline = $this->merged['underline'];
+        $this->lineThrough = $this->merged['lineThrough'];
+        $this->textTransform = $this->merged['textTransform'];
     }
 
     public function isFlexDiv(): bool
     {
-        return $this->tag === 'div' && $this->flex;
+        return ($this->tag === 'div' || $this->block) && $this->flex;
     }
 
     public function isDiv(): bool
     {
-        return $this->tag === 'div';
+        return $this->tag === 'div' || $this->block;
+    }
+
+    public function constrainWidth(int $width): int
+    {
+        if ($this->minW !== null && $width < $this->minW) {
+            $width = $this->minW;
+        }
+        if ($this->maxW !== null && $width > $this->maxW) {
+            $width = $this->maxW;
+        }
+
+        return $width;
     }
 
     public function rowWidth(int $availableWidth): int
     {
-        return $this->w ?? ($availableWidth - $this->ml - $this->mr);
+        return $this->constrainWidth($this->w ?? ($availableWidth - $this->ml - $this->mr));
     }
 
     public function innerWidth(int $availableWidth): int
     {
-        return ($this->w ?? $availableWidth) - $this->ml - $this->mr;
+        return $this->constrainWidth(($this->w ?? $availableWidth) - $this->ml - $this->mr);
     }
 
     public function contentWidth(int $allocatedWidth): int
@@ -113,17 +176,24 @@ class ElementStyle
     public function styleContent(string $inner, int $elementWidth): string
     {
         if ($this->gradient && $this->gradient['from']) {
-            $prefix = Ansi::buildPrefix($this->textColor, null, $this->bold);
+            $prefix = Ansi::buildPrefix($this->textColor, null, $this->bold, $this->italic, $this->underline, $this->lineThrough);
             $suffix = $prefix !== '' ? Ansi::reset() : '';
 
             return Ansi::applyGradient($prefix.$inner.$suffix, $elementWidth, $this->gradient);
         }
 
-        return Ansi::wrap($inner, $this->textColor, $this->bgColor, $this->bold);
+        return Ansi::wrap($inner, $this->textColor, $this->bgColor, $this->bold, $this->italic, $this->underline, $this->lineThrough);
     }
 
     public function wrapLines(array $lines): array
     {
+        if ($this->pt) {
+            array_unshift($lines, ...array_fill(0, $this->pt, ''));
+        }
+        if ($this->pb) {
+            array_push($lines, ...array_fill(0, $this->pb, ''));
+        }
+
         if ($this->ml || $this->mr) {
             $left = str_repeat(' ', $this->ml);
             $right = str_repeat(' ', $this->mr);

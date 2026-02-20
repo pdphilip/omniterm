@@ -64,17 +64,43 @@ class Renderer
         return $dom->getElementsByTagName('body')->item(0);
     }
 
-    protected function processChildren(DOMNode $parent, array $inherited, int $availableWidth): array
-    {
+    protected function processChildren(
+        DOMNode $parent,
+        array $inherited,
+        int $availableWidth,
+        int $spaceY = 0,
+        ?string $listStyle = null,
+    ): array {
         $lines = [];
+        $childIndex = 0;
+
         foreach ($parent->childNodes as $node) {
             if ($node instanceof DOMText) {
                 $text = $this->collapseWhitespace($this->cleanText($node->textContent));
                 if ($text !== '') {
+                    $text = Ansi::transformText($text, $inherited['textTransform'] ?? null);
+
+                    if ($spaceY > 0 && $childIndex > 0) {
+                        array_push($lines, ...array_fill(0, $spaceY, ''));
+                    }
+
                     $lines[] = Ansi::wrapInherited($text, $inherited);
+                    $childIndex++;
                 }
             } elseif ($node instanceof DOMElement) {
-                array_push($lines, ...$this->processElement($node, $inherited, $availableWidth));
+                $childLines = $this->processElement($node, $inherited, $availableWidth);
+                if (! empty($childLines)) {
+                    if ($spaceY > 0 && $childIndex > 0) {
+                        array_push($lines, ...array_fill(0, $spaceY, ''));
+                    }
+
+                    if ($listStyle !== null && $listStyle !== 'none') {
+                        $childLines = $this->prependListMarker($childLines, $listStyle, $childIndex);
+                    }
+
+                    array_push($lines, ...$childLines);
+                    $childIndex++;
+                }
             }
         }
 
@@ -85,15 +111,25 @@ class Renderer
     {
         $style = new ElementStyle($el, $inherited, $this->classes);
 
+        if ($style->hidden) {
+            return [];
+        }
+
         if ($style->isFlexDiv()) {
-            return $style->wrapLines($this->processFlexRow($el, $style, $style->rowWidth($availableWidth)));
+            $lines = $style->wrapLines($this->processFlexRow($el, $style, $style->rowWidth($availableWidth)));
+        } elseif ($style->isDiv()) {
+            $lines = $style->wrapLines(
+                $this->processChildren($el, $style->merged, $style->innerWidth($availableWidth), $style->spaceY, $style->listStyle)
+            );
+        } else {
+            $lines = $style->applyVerticalMargins([$this->renderInline($el, $style)]);
         }
 
-        if ($style->isDiv()) {
-            return $style->wrapLines($this->processChildren($el, $style->merged, $style->innerWidth($availableWidth)));
+        if ($style->invisible) {
+            $lines = array_map(fn ($l) => str_repeat(' ', Ansi::visibleLength($l)), $lines);
         }
 
-        return $style->applyVerticalMargins([$this->renderInline($el, $style)]);
+        return $lines;
     }
 
     protected function processFlexRow(DOMElement $el, ElementStyle $style, int $rowWidth): array
@@ -150,6 +186,11 @@ class Renderer
         }
 
         $measured = $this->measureChildren($children, $style->merged, $style->spaceX);
+
+        if ($style->justify && $measured['flexCount'] === 0) {
+            return $this->layoutJustifiedLine($children, $style, $measured, $rowWidth, $innerWidth);
+        }
+
         $remaining = $innerWidth - $measured['totalGaps'] - $measured['totalFixed'];
         $flexWidth = ($measured['flexCount'] > 0 && $remaining > 0)
             ? (int) floor($remaining / $measured['flexCount'])
@@ -182,6 +223,83 @@ class Renderer
         return $line;
     }
 
+    protected function layoutJustifiedLine(
+        array $children,
+        ElementStyle $style,
+        array $measured,
+        int $rowWidth,
+        int $innerWidth,
+    ): string {
+        $totalContent = $measured['totalFixed'];
+        $count = count($measured['infos']);
+        $space = max(0, $innerWidth - $totalContent);
+        $gaps = $this->computeJustifyGaps($style->justify, $space, $count);
+
+        $parts = [];
+
+        if ($style->pl) {
+            $parts[] = Ansi::styledSpaces($style->pl, $style->bgColor);
+        }
+
+        if ($gaps['before'] > 0) {
+            $parts[] = str_repeat(' ', $gaps['before']);
+        }
+
+        foreach ($measured['infos'] as $i => $info) {
+            if ($i > 0 && $gaps['between'] > 0) {
+                $parts[] = str_repeat(' ', $gaps['between']);
+            }
+            $parts[] = $this->renderFlexChild($info, $info['totalWidth'], $style->merged);
+        }
+
+        if ($gaps['after'] > 0) {
+            $parts[] = str_repeat(' ', $gaps['after']);
+        }
+
+        if ($style->pr) {
+            $parts[] = Ansi::styledSpaces($style->pr, $style->bgColor);
+        }
+
+        $line = implode('', $parts);
+
+        if ($style->gradient && $style->gradient['from']) {
+            $line = Ansi::applyGradient($line, $rowWidth, $style->gradient);
+        }
+
+        return $line;
+    }
+
+    protected function computeJustifyGaps(string $justify, int $space, int $count): array
+    {
+        if ($count <= 0) {
+            return ['before' => 0, 'between' => 0, 'after' => 0];
+        }
+
+        return match ($justify) {
+            'between' => [
+                'before' => 0,
+                'between' => $count > 1 ? (int) floor($space / ($count - 1)) : 0,
+                'after' => 0,
+            ],
+            'around' => [
+                'before' => (int) floor($space / ($count * 2)),
+                'between' => $count > 1 ? (int) floor($space / $count) : 0,
+                'after' => (int) floor($space / ($count * 2)),
+            ],
+            'evenly' => [
+                'before' => (int) floor($space / ($count + 1)),
+                'between' => (int) floor($space / ($count + 1)),
+                'after' => (int) floor($space / ($count + 1)),
+            ],
+            'center' => [
+                'before' => (int) floor($space / 2),
+                'between' => 0,
+                'after' => $space - (int) floor($space / 2),
+            ],
+            default => ['before' => 0, 'between' => 0, 'after' => 0],
+        };
+    }
+
     protected function measureChildren(array $children, array $inherited, int $spaceX): array
     {
         $infos = [];
@@ -210,6 +328,7 @@ class Renderer
     {
         if ($node instanceof DOMText) {
             $text = $this->collapseWhitespace($this->cleanText($node->textContent));
+            $text = Ansi::transformText($text, $inherited['textTransform'] ?? null);
 
             return [
                 'type' => 'content',
@@ -222,7 +341,7 @@ class Renderer
         $el = $node;
         $style = new ElementStyle($el, $inherited, $this->classes);
 
-        if ($style->flex1) {
+        if ($style->flex1 || $style->wFull) {
             return [
                 'type' => 'flex',
                 'node' => $node,
@@ -235,7 +354,7 @@ class Renderer
             return [
                 'type' => 'content',
                 'node' => $node,
-                'totalWidth' => $style->w + $style->ml + $style->mr,
+                'totalWidth' => $style->constrainWidth($style->w) + $style->ml + $style->mr,
                 'isFlexDiv' => $style->isFlexDiv(),
             ];
         }
@@ -265,7 +384,9 @@ class Renderer
         if ($this->hasChildElements($el)) {
             $contentLen = Ansi::visibleLength($this->renderInlineChildren($el, $style->merged));
         } else {
-            $contentLen = mb_strwidth($this->collapseWhitespace($this->cleanText($el->textContent)));
+            $text = $this->collapseWhitespace($this->cleanText($el->textContent));
+            $text = Ansi::transformText($text, $style->textTransform);
+            $contentLen = mb_strwidth($text);
         }
 
         return [
@@ -281,7 +402,10 @@ class Renderer
         $node = $info['node'];
 
         if ($node instanceof DOMText) {
-            return Ansi::pad($this->collapseWhitespace($this->cleanText($node->textContent)), $allocatedWidth);
+            $text = $this->collapseWhitespace($this->cleanText($node->textContent));
+            $text = Ansi::transformText($text, $inherited['textTransform'] ?? null);
+
+            return Ansi::pad($text, $allocatedWidth);
         }
 
         /** @var DOMElement $el */
@@ -297,7 +421,8 @@ class Renderer
     protected function renderFlexContainer(DOMElement $el, array $inherited, int $allocatedWidth): string
     {
         $style = new ElementStyle($el, $inherited, $this->classes);
-        $rendered = implode("\n", $this->processFlexRow($el, $style, $style->elementWidth($allocatedWidth)));
+        $elementWidth = $style->constrainWidth($style->elementWidth($allocatedWidth));
+        $rendered = implode("\n", $this->processFlexRow($el, $style, $elementWidth));
 
         return $style->addMargins($rendered);
     }
@@ -305,8 +430,10 @@ class Renderer
     protected function renderFlexElement(DOMElement $el, array $inherited, int $allocatedWidth): string
     {
         $style = new ElementStyle($el, $inherited, $this->classes);
-        $content = $this->buildContent($el, $style, $style->contentWidth($allocatedWidth));
-        $styled = $style->styleContent($style->padContent($content), $style->elementWidth($allocatedWidth));
+        $elementWidth = $style->constrainWidth($style->elementWidth($allocatedWidth));
+        $contentWidth = max(0, $elementWidth - $style->pl - $style->pr);
+        $content = $this->buildContent($el, $style, $contentWidth);
+        $styled = $style->styleContent($style->padContent($content), $elementWidth);
 
         return $style->addMargins($styled);
     }
@@ -318,15 +445,31 @@ class Renderer
         }
 
         if ($this->hasChildElements($el)) {
-            return Ansi::pad($this->renderInlineChildren($el, $style->merged), $width, $style->align);
+            $content = $this->renderInlineChildren($el, $style->merged);
+        } else {
+            $text = $this->cleanText($el->textContent);
+            $text = Ansi::transformText($text, $style->textTransform);
+            $content = $text;
         }
 
-        return Ansi::pad($this->cleanText($el->textContent), $width, $style->align);
+        if ($style->truncate && Ansi::visibleLength($content) > $width) {
+            $content = Ansi::truncate($content, $width);
+        }
+
+        return Ansi::pad($content, $width, $style->align);
     }
 
     protected function renderInline(DOMElement $el, ElementStyle $style): string
     {
-        return Ansi::wrap($this->renderInlineChildren($el, $style->merged), $style->textColor, $style->bgColor, $style->bold);
+        return Ansi::wrap(
+            $this->renderInlineChildren($el, $style->merged),
+            $style->textColor,
+            $style->bgColor,
+            $style->bold,
+            $style->italic,
+            $style->underline,
+            $style->lineThrough,
+        );
     }
 
     protected function renderInlineChildren(DOMElement $el, array $inherited): string
@@ -336,6 +479,7 @@ class Renderer
             if ($node instanceof DOMText) {
                 $text = $this->collapseWhitespace($this->cleanText($node->textContent));
                 if ($text !== '') {
+                    $text = Ansi::transformText($text, $inherited['textTransform'] ?? null);
                     $parts[] = Ansi::wrapInherited($text, $inherited);
                 }
             } elseif ($node instanceof DOMElement) {
@@ -365,5 +509,25 @@ class Renderer
         }
 
         return false;
+    }
+
+    protected function prependListMarker(array $lines, string $listStyle, int $index): array
+    {
+        if (empty($lines)) {
+            return $lines;
+        }
+
+        $marker = match ($listStyle) {
+            'disc' => '• ',
+            'decimal' => ($index + 1).'. ',
+            'square' => '▪ ',
+            default => '',
+        };
+
+        if ($marker !== '') {
+            $lines[0] = $marker.$lines[0];
+        }
+
+        return $lines;
     }
 }

@@ -9,13 +9,18 @@ class ClassParser
     public function parse(string $classStr): array
     {
         $result = [
-            'flex' => false, 'flex1' => false, 'bold' => false,
-            'textCenter' => false, 'textRight' => false,
+            'flex' => false, 'flex1' => false, 'bold' => false, 'fontNormal' => false,
+            'italic' => false, 'underline' => false, 'lineThrough' => false,
+            'textCenter' => false, 'textRight' => false, 'textLeft' => false,
+            'textTransform' => null, 'truncate' => false,
             'textColor' => null, 'bgColor' => null, 'gradient' => null,
-            'w' => null, 'px' => 0, 'pl' => 0, 'pr' => 0,
-            'mx' => 0, 'ml' => 0, 'mr' => 0,
+            'w' => null, 'minW' => null, 'maxW' => null, 'wFull' => false, 'wAuto' => false,
+            'px' => 0, 'pl' => 0, 'pr' => 0, 'py' => 0, 'pt' => 0, 'pb' => 0, 'p' => 0,
+            'mx' => 0, 'ml' => 0, 'mr' => 0, 'my' => 0,
             'mb' => 0, 'mt' => 0, 'm' => 0,
-            'spaceX' => 0, 'contentRepeat' => null,
+            'spaceX' => 0, 'spaceY' => 0, 'contentRepeat' => null,
+            'block' => false, 'hidden' => false, 'invisible' => false,
+            'justify' => null, 'listStyle' => null,
         ];
 
         foreach (preg_split('/\s+/', trim($classStr)) as $class) {
@@ -36,10 +41,12 @@ class ClassParser
         return [
             'ml' => $styles['ml'] ?: ($styles['mx'] ?: $styles['m']),
             'mr' => $styles['mr'] ?: ($styles['mx'] ?: $styles['m']),
-            'mt' => $styles['mt'] ?: $styles['m'],
-            'mb' => $styles['mb'] ?: $styles['m'],
-            'pl' => $styles['pl'] ?: $styles['px'],
-            'pr' => $styles['pr'] ?: $styles['px'],
+            'mt' => $styles['mt'] ?: ($styles['my'] ?: $styles['m']),
+            'mb' => $styles['mb'] ?: ($styles['my'] ?: $styles['m']),
+            'pl' => $styles['pl'] ?: $styles['px'] ?: $styles['p'],
+            'pr' => $styles['pr'] ?: $styles['px'] ?: $styles['p'],
+            'pt' => $styles['pt'] ?: $styles['py'] ?: $styles['p'],
+            'pb' => $styles['pb'] ?: $styles['py'] ?: $styles['p'],
         ];
     }
 
@@ -57,24 +64,53 @@ class ClassParser
 
     public function mergeInherited(array $inherited, array $styles): array
     {
+        $bold = $styles['fontNormal']
+            ? false
+            : (($styles['bold'] ?? false) || ($inherited['bold'] ?? false));
+
         return [
             'textColor' => $styles['textColor'] ?? $inherited['textColor'] ?? null,
-            'bold' => ($styles['bold'] ?? false) || ($inherited['bold'] ?? false),
+            'bold' => $bold,
+            'italic' => ($styles['italic'] ?? false) || ($inherited['italic'] ?? false),
+            'underline' => ($styles['underline'] ?? false) || ($inherited['underline'] ?? false),
+            'lineThrough' => ($styles['lineThrough'] ?? false) || ($inherited['lineThrough'] ?? false),
+            'textTransform' => $styles['textTransform'] ?? $inherited['textTransform'] ?? null,
         ];
     }
 
     private function parseLayoutClass(string $class, array &$result): bool
     {
         $flags = [
-            'flex' => 'flex',
-            'flex-1' => 'flex1',
-            'font-bold' => 'bold',
-            'text-center' => 'textCenter',
-            'text-right' => 'textRight',
+            'flex' => 'flex', 'flex-1' => 'flex1',
+            'font-bold' => 'bold', 'font-normal' => 'fontNormal',
+            'italic' => 'italic', 'underline' => 'underline', 'line-through' => 'lineThrough',
+            'text-center' => 'textCenter', 'text-right' => 'textRight', 'text-left' => 'textLeft',
+            'truncate' => 'truncate',
+            'block' => 'block', 'hidden' => 'hidden', 'invisible' => 'invisible',
+            'w-full' => 'wFull', 'w-auto' => 'wAuto',
         ];
 
         if (isset($flags[$class])) {
             $result[$flags[$class]] = true;
+
+            return true;
+        }
+
+        $transforms = ['uppercase', 'lowercase', 'capitalize', 'snakecase'];
+        if (in_array($class, $transforms, true)) {
+            $result['textTransform'] = $class;
+
+            return true;
+        }
+
+        if (preg_match('/^justify-(between|around|evenly|center)$/', $class, $m)) {
+            $result['justify'] = $m[1];
+
+            return true;
+        }
+
+        if (preg_match('/^list-(disc|decimal|square|none)$/', $class, $m)) {
+            $result['listStyle'] = $m[1];
 
             return true;
         }
@@ -84,10 +120,18 @@ class ClassParser
 
     private function parseSizeClass(string $class, array &$result): bool
     {
-        if (preg_match('/^w-(\d+)$/', $class, $m)) {
-            $result['w'] = (int) $m[1];
+        $patterns = [
+            'w' => '/^w-(\d+)$/',
+            'minW' => '/^min-w-(\d+)$/',
+            'maxW' => '/^max-w-(\d+)$/',
+        ];
 
-            return true;
+        foreach ($patterns as $key => $pattern) {
+            if (preg_match($pattern, $class, $m)) {
+                $result[$key] = (int) $m[1];
+
+                return true;
+            }
         }
 
         return false;
@@ -97,9 +141,12 @@ class ClassParser
     {
         $patterns = [
             'px' => '/^px-(\d+)$/', 'pl' => '/^pl-(\d+)$/', 'pr' => '/^pr-(\d+)$/',
+            'py' => '/^py-(\d+)$/', 'pt' => '/^pt-(\d+)$/', 'pb' => '/^pb-(\d+)$/',
+            'p' => '/^p-(\d+)$/',
             'mx' => '/^mx-(\d+)$/', 'ml' => '/^ml-(\d+)$/', 'mr' => '/^mr-(\d+)$/',
+            'my' => '/^my-(\d+)$/',
             'mb' => '/^mb-(\d+)$/', 'mt' => '/^mt-(\d+)$/', 'm' => '/^m-(\d+)$/',
-            'spaceX' => '/^space-x-(\d+)$/',
+            'spaceX' => '/^space-x-(\d+)$/', 'spaceY' => '/^space-y-(\d+)$/',
         ];
 
         foreach ($patterns as $key => $pattern) {
