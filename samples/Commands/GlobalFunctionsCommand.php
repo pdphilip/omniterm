@@ -21,22 +21,22 @@ class GlobalFunctionsCommand extends Command
         $this->omni->titleBar('Render Functions', 'cyan');
         $this->newLine();
 
-        $this->omni->line('<div class="mx-1"><span class="text-amber-500">Terminal Size:</span> '.$width.' x '.$height.'</div>');
+        $this->omni->render('<div class="mx-1"><span class="text-amber-500">Terminal Size:</span> '.$width.' x '.$height.'</div>');
         $this->newLine();
 
-        $this->omni->line('<div class="mx-1 text-sky-500">1. line() - Basic HTML to terminal:</div>');
+        $this->omni->render('<div class="mx-1 text-sky-500">1. render() - Basic HTML to terminal:</div>');
         $this->newLine();
 
-        $this->omni->line('<div class="mx-2 text-green-500 font-bold">  Bold green text</div>');
-        $this->omni->line('<div class="mx-2"><span class="bg-red-600 text-white px-1">ERROR</span> With a badge</div>');
-        $this->omni->line('<div class="mx-2"><span class="text-yellow-500">Warning:</span> <span class="text-gray">Some message</span></div>');
+        $this->omni->render('<div class="mx-2 text-green-500 font-bold">  Bold green text</div>');
+        $this->omni->render('<div class="mx-2"><span class="bg-red-600 text-white px-1">ERROR</span> With a badge</div>');
+        $this->omni->render('<div class="mx-2"><span class="text-yellow-500">Warning:</span> <span class="text-gray">Some message</span></div>');
 
         $this->newLine();
 
-        $this->omni->line('<div class="mx-1 text-sky-500">2. line() - Flexbox layouts:</div>');
+        $this->omni->render('<div class="mx-1 text-sky-500">2. render() - Flexbox layouts:</div>');
         $this->newLine();
 
-        $this->omni->line('
+        $this->omni->render('
             <div class="flex mx-2">
                 <span class="text-emerald-500">Left</span>
                 <span class="flex-1 text-center text-amber-500">Center</span>
@@ -46,7 +46,7 @@ class GlobalFunctionsCommand extends Command
 
         $this->newLine();
 
-        $this->omni->line('
+        $this->omni->render('
             <div class="flex mx-2">
                 <span class="font-bold">Status</span>
                 <span class="flex-1 content-repeat-[.] text-gray"></span>
@@ -56,7 +56,7 @@ class GlobalFunctionsCommand extends Command
 
         $this->newLine();
 
-        $this->omni->line('<div class="mx-1 text-sky-500">3. liveView() - Live updating display:</div>');
+        $this->omni->render('<div class="mx-1 text-sky-500">3. liveView() - Live updating display:</div>');
         $this->newLine();
 
         $live = $this->omni->liveView('<div class="mx-2">  Countdown: <span class="text-amber-500">Starting...</span></div>');
@@ -72,7 +72,7 @@ class GlobalFunctionsCommand extends Command
 
         $this->newLine();
 
-        $this->omni->line('<div class="mx-1 text-sky-500">4. liveView() - Custom progress:</div>');
+        $this->omni->render('<div class="mx-1 text-sky-500">4. liveView() - Custom progress:</div>');
         $this->newLine();
 
         $live = $this->omni->liveView();
@@ -103,8 +103,8 @@ class GlobalFunctionsCommand extends Command
         $this->omni->endLiveView();
         $this->newLine();
 
-        $this->omni->line('<div class="mx-1 text-gray">────────────────────────────────────</div>');
-        $this->omni->line('<div class="mx-1 text-emerald-500 font-bold">Render functions demo complete!</div>');
+        $this->omni->render('<div class="mx-1 text-gray">────────────────────────────────────</div>');
+        $this->omni->render('<div class="mx-1 text-emerald-500 font-bold">Render functions demo complete!</div>');
 
         return Command::SUCCESS;
     }
