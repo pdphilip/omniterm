@@ -2,6 +2,24 @@
 
 All notable changes to `pdphilip/omniterm` will be documented in this file.
 
+## v2.0.1 - 2026-02-20
+
+### Added
+
+- `feedback()` public method for custom-colored feedback messages with any title and color
+- Custom `$title` parameter on `success()`, `error()`, `warning()`, `info()`, `disabled()` methods
+- `confirm()` method with Y/N prompt and callback execution
+- `ConfirmTask` class for interactive confirmation dialogs
+- 26 CSS classes added to the rendering engine: `italic`, `underline`, `line-through`, `font-normal`, `invisible`, `block`, `list-disc`, `list-decimal`, `list-square`, `list-none`, `text-left`, `text-right`, `text-center`, `justify-between`, `justify-around`, `justify-center`, `justify-evenly`, `uppercase`, `lowercase`, `capitalize`, `snakecase`, `truncate`, `min-w-{n}`, `max-w-{n}`, `w-auto`, `w-full`
+- `FeedbackTest` with 5 tests covering feedback view rendering
+- New sample commands: `omniterm:confirm`, `omniterm:tailwind-classes`
+
+### Changed
+
+- Feedback methods (`success`, `error`, `warning`, `info`, `disabled`) now delegate to a single `feedback()` method using one shared blade view
+- Removed individual blade views (`success.blade.php`, `error.blade.php`, `warning.blade.php`, `info.blade.php`, `disabled.blade.php`) in favor of unified `feedback.blade.php`
+- Type hints and readability improvements across async classes
+
 ## v2.0.0 - 2026-02-15
 
 ### Breaking Changes
