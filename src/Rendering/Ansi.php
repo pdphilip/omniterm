@@ -68,6 +68,11 @@ final class Ansi
         return "\e[9m";
     }
 
+    public static function dim(): string
+    {
+        return "\e[90m";
+    }
+
     public static function reset(): string
     {
         return "\e[0m";

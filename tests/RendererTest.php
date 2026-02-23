@@ -260,12 +260,12 @@ describe('w-full', function () {
 
 describe('display', function () {
     it('renders block span as block element', function () {
-        $html = '<div><span class="block"><span>a</span><span>b</span></span></div>';
+        $html = '<div><span class="block">content</span><span class="block">more</span></div>';
         $lines = explode("\n", $this->renderer->toAnsi($html));
 
         expect(count($lines))->toBe(2);
-        expect($lines[0])->toContain('a');
-        expect($lines[1])->toContain('b');
+        expect($lines[0])->toContain('content');
+        expect($lines[1])->toContain('more');
     });
 
     it('hidden returns nothing', function () {

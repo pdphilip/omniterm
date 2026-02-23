@@ -20,6 +20,24 @@ class AsciiHelper
         ];
     }
 
+    public static function roundedTable(): array
+    {
+        return [
+            'tl' => '╭',
+            'top' => '┬',
+            'tr' => '╮',
+            'ml' => '├',
+            'mid' => '┼',
+            'mr' => '┤',
+            'bl' => '╰',
+            'bottom' => '┴',
+            'br' => '╯',
+            'h' => '─',
+            'v' => '│',
+            'arrow' => '→',
+        ];
+    }
+
     public static function squareBox(): array
     {
         return [

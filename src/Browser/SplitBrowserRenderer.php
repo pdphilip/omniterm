@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace OmniTerm\Browser;
 
 use OmniTerm\Async\SplitBrowser;
+use OmniTerm\Helpers\Partials\AsciiHelper;
+use OmniTerm\Rendering\Ansi;
 
 class SplitBrowserRenderer
 {
@@ -27,8 +29,13 @@ class SplitBrowserRenderer
         $detail = $prompt->detail();
         $rows = $prompt->scroll;
 
+        $box = AsciiHelper::roundedTable();
+        $dim = Ansi::dim();
+        $reset = Ansi::reset();
+        $v = $box['v'];
+
         $lines = [];
-        $lines[] = $this->topBorder($prompt->label, $leftWidth, $rightWidth);
+        $lines[] = $this->topBorder($box, $prompt->label, $leftWidth, $rightWidth);
 
         for ($i = 0; $i < $rows; $i++) {
             $itemIndex = $prompt->firstVisible + $i;
@@ -36,10 +43,10 @@ class SplitBrowserRenderer
             $leftContent = $this->renderLeftCell($prompt, $itemIndex, $leftWidth);
             $rightContent = $this->renderRightCell($detail, $i, $rightWidth);
 
-            $lines[] = "\e[90m│\e[0m{$leftContent}\e[90m│\e[0m{$rightContent}\e[90m│\e[0m";
+            $lines[] = "{$dim}{$v}{$reset}{$leftContent}{$dim}{$v}{$reset}{$rightContent}{$dim}{$v}{$reset}";
         }
 
-        $lines[] = $this->bottomBorder($leftWidth, $rightWidth);
+        $lines[] = $this->bottomBorder($box, $leftWidth, $rightWidth);
         $lines[] = "  \e[2m{$prompt->hint}\e[0m";
 
         return implode(PHP_EOL, $lines);
@@ -85,18 +92,20 @@ class SplitBrowserRenderer
         return $this->fitToWidth($line, $width);
     }
 
-    private function topBorder(string $label, int $leftWidth, int $rightWidth): string
+    private function topBorder(array $box, string $label, int $leftWidth, int $rightWidth): string
     {
         $labelText = " {$label} ";
-        $labelLen = mb_strwidth($labelText);
-        $leftFill = max(0, $leftWidth - $labelLen);
+        $leftFill = max(0, $leftWidth - mb_strwidth($labelText));
+        $h = $box['h'];
 
-        return "\e[90m╭{$labelText}".str_repeat('─', $leftFill).'┬'.str_repeat('─', $rightWidth)."╮\e[0m";
+        return Ansi::dim()."{$box['tl']}{$labelText}".str_repeat($h, $leftFill)."{$box['top']}".str_repeat($h, $rightWidth)."{$box['tr']}".Ansi::reset();
     }
 
-    private function bottomBorder(int $leftWidth, int $rightWidth): string
+    private function bottomBorder(array $box, int $leftWidth, int $rightWidth): string
     {
-        return "\e[90m╰".str_repeat('─', $leftWidth).'┴'.str_repeat('─', $rightWidth)."╯\e[0m";
+        $h = $box['h'];
+
+        return Ansi::dim()."{$box['bl']}".str_repeat($h, $leftWidth)."{$box['bottom']}".str_repeat($h, $rightWidth)."{$box['br']}".Ansi::reset();
     }
 
     private function leftPaneWidth(int $totalWidth): int

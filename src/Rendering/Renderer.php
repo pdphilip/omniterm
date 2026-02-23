@@ -8,6 +8,7 @@ use DOMDocument;
 use DOMElement;
 use DOMNode;
 use DOMText;
+use OmniTerm\Helpers\Partials\AsciiHelper;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -160,7 +161,7 @@ class Renderer
 
         if ($style->isFlexDiv()) {
             $lines = $style->wrapLines($this->processFlexRow($el, $style, $style->rowWidth($availableWidth)));
-        } elseif ($style->isDiv() && ! $style->preserveWhitespace && $this->hasOnlyInlineChildren($el)) {
+        } elseif ($style->isDiv() && ! $style->preserveWhitespace && ! $style->listStyle && ! $style->spaceY && $this->hasOnlyInlineChildren($el)) {
             $lines = $style->wrapLines([$this->renderInlineChildren($el, $style->merged)]);
         } elseif ($style->isDiv()) {
             $lines = $style->wrapLines(
@@ -570,7 +571,8 @@ class Renderer
     {
         $style = new ElementStyle($el, $inherited, $this->classes);
         $width = ($style->w ?? $availableWidth) - $style->ml - $style->mr;
-        $line = Ansi::repeatChar("\u{2500}", $width);
+        $box = AsciiHelper::roundedTable();
+        $line = Ansi::repeatChar($box['h'], $width);
 
         if ($style->textColor) {
             $line = Ansi::wrap($line, $style->textColor, null, false);
@@ -621,7 +623,8 @@ class Renderer
         $arrowColor = Colors::rgb('rose', 500);
         $codeColor = $style->textColor ?? Colors::rgb('violet', 300);
         $bgColor = $style->bgColor;
-        $divider = Ansi::wrap("\u{2502}", Colors::rgb('stone', 700), null, false);
+        $box = AsciiHelper::roundedTable();
+        $divider = Ansi::wrap($box['v'], Colors::rgb('stone', 700), null, false);
         $contentWidth = $availableWidth - $style->ml - $style->mr;
 
         $lines = [];
@@ -634,7 +637,7 @@ class Renderer
                 $dimNum = Ansi::wrap($numStr, Colors::rgb('zinc', 500), null, false);
 
                 if ($hasHighlight && $lineNum === $highlightLine) {
-                    $prefix = Ansi::wrap("\u{2192}", $arrowColor, null, false).' '.$numStr.' '.$divider.' ';
+                    $prefix = Ansi::wrap($box['arrow'], $arrowColor, null, false).' '.$numStr.' '.$divider.' ';
                 } elseif ($hasHighlight) {
                     $prefix = '  '.$dimNum.' '.$divider.' ';
                 } else {
@@ -806,7 +809,8 @@ class Renderer
 
     protected function renderTableRow(array $cells, array $colWidths, ElementStyle $tableStyle, array $borderColor): string
     {
-        $border = Ansi::wrap("\u{2502}", $borderColor, null, false);
+        $box = AsciiHelper::roundedTable();
+        $border = Ansi::wrap($box['v'], $borderColor, null, false);
         $parts = [$border];
 
         foreach ($colWidths as $i => $width) {
@@ -830,10 +834,12 @@ class Renderer
 
     protected function renderTableBorder(array $colWidths, string $position, array $borderColor): string
     {
-        [$left, $mid, $right, $fill] = match ($position) {
-            'top' => ["\u{256D}", "\u{252C}", "\u{256E}", "\u{2500}"],
-            'mid' => ["\u{251C}", "\u{253C}", "\u{2524}", "\u{2500}"],
-            'bottom' => ["\u{2570}", "\u{2534}", "\u{256F}", "\u{2500}"],
+        $box = AsciiHelper::roundedTable();
+
+        [$left, $mid, $right] = match ($position) {
+            'top' => [$box['tl'], $box['top'], $box['tr']],
+            'mid' => [$box['ml'], $box['mid'], $box['mr']],
+            default => [$box['bl'], $box['bottom'], $box['br']],
         };
 
         $segments = [];
@@ -841,7 +847,7 @@ class Renderer
             if ($i > 0) {
                 $segments[] = $mid;
             }
-            $segments[] = str_repeat($fill, $width + 2);
+            $segments[] = str_repeat($box['h'], $width + 2);
         }
 
         return Ansi::wrap($left.implode('', $segments).$right, $borderColor, null, false);
@@ -865,7 +871,14 @@ class Renderer
 
     protected function isBlockTag(DOMElement $el): bool
     {
-        return in_array(strtolower($el->tagName), static::BLOCK_TAGS, true);
+        if (in_array(strtolower($el->tagName), static::BLOCK_TAGS, true)) {
+            return true;
+        }
+
+        // Check for block class on inline tags (e.g. <span class="block">)
+        $classes = $el->getAttribute('class');
+
+        return $classes !== '' && preg_match('/\bblock\b/', $classes) === 1;
     }
 
     protected function cleanText(string $text): string
