@@ -2,6 +2,76 @@
 
 All notable changes to `pdphilip/omniterm` will be documented in this file.
 
+## v2.1.0 - 2026-02-23
+
+### Added
+
+#### HTML Tag Support
+
+The rendering engine now handles semantic HTML tags with correct terminal output. Tags apply sensible defaults (block/inline, bold, italic, etc.) that CSS classes can override.
+
+**Block tags:** `<p>`, `<ul>`, `<ol>`, `<li>`, `<dl>`, `<dt>`, `<dd>`, `<pre>`, `<code>`, `<table>`, `<section>`, `<article>`, `<header>`, `<footer>`, `<nav>`, `<aside>`, `<main>`
+
+**Inline tags:** `<b>`/`<strong>` (bold), `<i>`/`<em>` (italic), `<s>` (strikethrough), `<a>` (underline + hyperlink), `<th>` (bold)
+
+**Self-closing:** `<br>` (line break), `<hr>` (horizontal rule with color support)
+
+#### Table Rendering
+
+`<table>` elements render with rounded box-drawing borders. Auto-sized columns with proportional shrinking when content exceeds terminal width. Header rows get a mid-border separator.
+
+```html
+<table>
+    <thead><tr><th>Name</th><th>Status</th></tr></thead>
+    <tr><td>Build</td><td>Done</td></tr>
+</table>
+```
+
+#### Code Blocks
+
+`<code>` preserves whitespace and supports line numbers via `line` and `start-line` attributes.
+
+```html
+<code line="1" start-line="10">
+    $foo = 'bar';
+    echo $foo;
+</code>
+```
+
+#### Hyperlinks
+
+`<a href="...">` wraps content with OSC 8 terminal hyperlink sequences. Terminals that support it show clickable links; others show the text as-is with underline.
+
+#### Whitespace Preservation
+
+`<pre>` and `<code>` preserve whitespace and newlines. The `preserveWhitespace` property inherits through nested elements.
+
+#### Data List & Debug
+
+- `dataList($data, $title, $borderColor)` renders any data structure as a tree with box-drawing connectors
+- `debug($var, $label)` dumps data as a tree and exits (the terminal `dd()`)
+
+#### Other
+
+- `newLine($count)` method for outputting blank lines
+- `tableRow()` and `tableRowAsStatus()` now accept `mixed` values (auto-cast to string)
+- `Ansi::dim()` method
+- `Ansi::hyperlink()`, `Ansi::stripAnsi()` methods
+
+### Changed
+
+- Rendering engine: `isBlockTag()` now recognizes `class="block"` on inline tags, not just block tag names
+- Rendering engine: inline shortcut skipped when `listStyle` or `spaceY` is active (fixes list/space-y rendering with inline children)
+- Box-drawing characters consolidated into `AsciiHelper` as single source of truth (`roundedTable()` method)
+- `SplitBrowserRenderer` uses `AsciiHelper` and `Ansi` methods instead of raw escape sequences
+- `Ansi::visibleLength()` and `Ansi::truncate()` handle OSC 8 hyperlink sequences
+
+### Fixed
+
+- List styles (`list-disc`, `list-decimal`, `list-square`) now render markers correctly when children are inline elements
+- `space-y` now adds spacing between inline children in block containers
+- `<span class="block">` correctly treated as block element in parent layout decisions
+
 ## v2.0.1 - 2026-02-20
 
 ### Added
