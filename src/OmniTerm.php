@@ -11,6 +11,7 @@ use OmniTerm\Async\Spinner;
 use OmniTerm\Async\SpinnerTask;
 use OmniTerm\Async\SplitBrowser;
 use OmniTerm\Async\TaskResult;
+use OmniTerm\Helpers\DebugFormatter;
 use OmniTerm\Helpers\ProgressBar;
 use OmniTerm\Rendering\Renderer;
 use OmniTerm\Rendering\Terminal;
@@ -66,6 +67,15 @@ class OmniTerm
         } catch (InvalidArgumentException $e) {
             $this->omniError($view, 'View not found', 'Check that the omniterm views are published or the package is installed correctly');
         }
+    }
+
+    protected function castToString(mixed $value): ?string
+    {
+        if (is_null($value)) {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     protected function outputHtml(string $html): void
@@ -194,8 +204,10 @@ class OmniTerm
         $this->outputHtml($this->renderView('omniterm::elements.header-row', ['keyName' => $keyName, 'valueName' => $valueName, 'detailsName' => $detailsName]));
     }
 
-    public function tableRow(string $key, string $value, ?string $details = null, ?string $valueClass = null, array $help = []): void
+    public function tableRow(string $key, mixed $value, mixed $details = null, ?string $valueClass = null, array $help = []): void
     {
+        $value = $this->castToString($value);
+        $details = $this->castToString($details);
         $this->outputHtml($this->renderView('omniterm::elements.data-row', ['key' => $key, 'value' => $value, 'details' => $details, 'help' => $help, 'class' => $valueClass, 'statusColors' => $this->statusColors()]));
     }
 
@@ -239,9 +251,23 @@ class OmniTerm
         $this->tableRowAsStatus($key, 'failed', $details, $help);
     }
 
-    public function tableRowAsStatus(string $key, string $status, ?string $details = null, array $help = []): void
+    public function tableRowAsStatus(string $key, string $status, mixed $details = null, array $help = []): void
     {
+        $details = $this->castToString($details);
         $this->outputHtml($this->renderView('omniterm::elements.data-row-status', ['key' => $key, 'status' => $status, 'details' => $details, 'help' => $help, 'statusColors' => $this->statusColors()]));
+    }
+
+    // ----------------------------------------------------------------------
+    // Debug
+    // ----------------------------------------------------------------------
+
+    public function debug(mixed $var, string $label = ''): void
+    {
+        $rows = DebugFormatter::format($var);
+        $this->outputHtml($this->renderView('omniterm::debug.debug', [
+            'label' => $label,
+            'rows' => $rows,
+        ]));
     }
 
     // ----------------------------------------------------------------------

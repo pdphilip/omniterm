@@ -163,20 +163,32 @@ $this->omni->task('Processing batch job', function () {
 For fine-grained control with live-updating counters:
 
 ```php
-$task = $this->omni->liveTask('Syncing records', Spinner::Dots);
-$task->row('Processed', 0);
-$task->row('Skipped', 0);
+$task = $this->omni->liveTask('Processing records', spinner: Spinner::Dots3)
+    ->row('Created', 0, 'text-sky-500')
+    ->row('Updated', 0, 'text-emerald-500')
+    ->row('Skipped', 0, 'text-amber-500')
+    ->row('Failed', 0, 'text-rose-500');
 
-$result = $task->run(function () use ($task) {
-    foreach ($records as $record) {
-        $record->sync()
-            ? $task->increment('Processed')
-            : $task->increment('Skipped');
-    }
-    return ['state' => 'success', 'message' => 'Sync complete'];
-});
+// Simulate 5 chunked batches
+for ($batch = 0; $batch < 5; $batch++) {
+    $result = $task->run(function () {
+        usleep(800000);
 
-$task->finish('All done');
+        return [
+            'created' => rand(10, 50),
+            'updated' => rand(5, 20),
+            'skipped' => rand(0, 5),
+            'failed' => rand(0, 2),
+        ];
+    });
+
+    $task->increment('Created', $result['created']);
+    $task->increment('Updated', $result['updated']);
+    $task->increment('Skipped', $result['skipped']);
+    $task->increment('Failed', $result['failed']);
+}
+
+$task->finish('Processing complete');
 ```
 
 The `Spinner` enum provides 10 animation types: `Dots`, `Dots2`, `Dots3`, `DotsCircle`, `Sand`, `Clock`, `Material`, `Pong`, `Progress`, `ProgressLoader`.

@@ -47,8 +47,8 @@ switch ($state) {
                 $displayValue = $row['value'];
                 $class = $row['color'];
                 $details = $row['details'];
-                if ($displayValue === 0) {
-                    $class = $class ?: 'text-stone-600';
+                if ($displayValue == 0) {
+                    $class = 'text-stone-600';
                 } elseif (is_int($displayValue)) {
                     $displayValue = number_format($displayValue);
                 }
@@ -60,7 +60,7 @@ switch ($state) {
                     <span class="text-stone-400">[{{ $details }}]</span>
                 @endif
                 <span class="text-right">
-            <span class="{{$class}} font-bold px-1">{{$displayValue}}</span>
+                <span class="{{$class}} font-bold px-1">{{$displayValue}}</span>
         </span>
             </div>
         @endforeach
