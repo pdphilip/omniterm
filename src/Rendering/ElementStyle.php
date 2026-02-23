@@ -8,6 +8,29 @@ use DOMElement;
 
 class ElementStyle
 {
+    private const TAG_DEFAULTS = [
+        'p' => ['block' => true],
+        'b' => ['bold' => true],
+        'strong' => ['bold' => true],
+        'i' => ['italic' => true],
+        'em' => ['italic' => true],
+        's' => ['lineThrough' => true],
+        'ul' => ['block' => true, 'listStyle' => 'disc'],
+        'ol' => ['block' => true, 'listStyle' => 'decimal'],
+        'li' => ['block' => true],
+        'dl' => ['block' => true],
+        'dt' => ['block' => true, 'bold' => true],
+        'dd' => ['block' => true, 'ml' => 4],
+        'pre' => ['block' => true, 'preserveWhitespace' => true],
+        'a' => ['underline' => true],
+        'code' => ['block' => true, 'preserveWhitespace' => true],
+        'table' => ['block' => true],
+        'thead' => ['block' => true],
+        'tbody' => ['block' => true],
+        'tr' => ['block' => true],
+        'th' => ['bold' => true],
+    ];
+
     public readonly string $tag;
 
     public readonly bool $flex;
@@ -76,14 +99,17 @@ class ElementStyle
 
     public readonly ?string $listStyle;
 
+    public readonly bool $preserveWhitespace;
+
     public readonly array $merged;
 
     public function __construct(DOMElement $el, array $inherited, ClassParser $parser)
     {
+        $this->tag = strtolower($el->tagName);
         $raw = $parser->parse($el->getAttribute('class'));
+        $this->applyTagDefaults($raw);
         $spacing = $parser->resolveSpacing($raw);
 
-        $this->tag = strtolower($el->tagName);
         $this->flex = $raw['flex'];
         $this->flex1 = $raw['flex1'];
         $this->bgColor = $raw['bgColor'];
@@ -120,6 +146,8 @@ class ElementStyle
         $this->underline = $this->merged['underline'];
         $this->lineThrough = $this->merged['lineThrough'];
         $this->textTransform = $this->merged['textTransform'];
+        $this->preserveWhitespace = $this->merged['preserveWhitespace']
+            || ($inherited['preserveWhitespace'] ?? false);
     }
 
     public function isFlexDiv(): bool
@@ -222,5 +250,33 @@ class ElementStyle
         }
 
         return str_repeat(' ', $this->ml).$content.str_repeat(' ', $this->mr);
+    }
+
+    // ======================================================================
+    // Tag Defaults
+    // ======================================================================
+
+    private function applyTagDefaults(array &$raw): void
+    {
+        $defaults = self::TAG_DEFAULTS[$this->tag] ?? [];
+
+        foreach ($defaults as $key => $value) {
+            if (is_bool($value)) {
+                if ($key === 'bold' && $raw['fontNormal']) {
+                    continue;
+                }
+                if (! $raw[$key]) {
+                    $raw[$key] = $value;
+                }
+            } elseif (is_int($value)) {
+                if ($raw[$key] === 0) {
+                    $raw[$key] = $value;
+                }
+            } elseif (is_string($value)) {
+                if ($raw[$key] === null || $raw[$key] === false) {
+                    $raw[$key] = $value;
+                }
+            }
+        }
     }
 }

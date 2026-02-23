@@ -154,8 +154,7 @@ final class Ansi
             return $text;
         }
 
-        // Strip ANSI, truncate plain text, add ellipsis
-        $plain = preg_replace('/\e\[[0-9;]*m/', '', $text);
+        $plain = self::stripAnsi($text);
         if ($width <= 1) {
             return mb_substr($plain, 0, $width);
         }
@@ -230,9 +229,21 @@ final class Ansi
         return $result.self::reset();
     }
 
+    public static function hyperlink(string $text, string $url): string
+    {
+        return "\033]8;;{$url}\033\\{$text}\033]8;;\033\\";
+    }
+
     public static function visibleLength(string $text): int
     {
-        return mb_strwidth(preg_replace('/\e\[[0-9;]*m/', '', $text));
+        return mb_strwidth(self::stripAnsi($text));
+    }
+
+    public static function stripAnsi(string $text): string
+    {
+        $text = preg_replace('/\e\[[0-9;]*m/', '', $text);
+
+        return preg_replace('/\e\]8;;[^\e]*\e\\\\/', '', $text);
     }
 
     private static function lerpColor(array $from, array $to, ?array $via, float $t): array

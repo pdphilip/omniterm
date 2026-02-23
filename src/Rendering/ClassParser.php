@@ -20,7 +20,7 @@ class ClassParser
             'mb' => 0, 'mt' => 0, 'm' => 0,
             'spaceX' => 0, 'spaceY' => 0, 'contentRepeat' => null,
             'block' => false, 'hidden' => false, 'invisible' => false,
-            'justify' => null, 'listStyle' => null,
+            'justify' => null, 'listStyle' => null, 'preserveWhitespace' => false,
         ];
 
         foreach (preg_split('/\s+/', trim($classStr)) as $class) {
@@ -75,6 +75,7 @@ class ClassParser
             'underline' => ($styles['underline'] ?? false) || ($inherited['underline'] ?? false),
             'lineThrough' => ($styles['lineThrough'] ?? false) || ($inherited['lineThrough'] ?? false),
             'textTransform' => $styles['textTransform'] ?? $inherited['textTransform'] ?? null,
+            'preserveWhitespace' => ($styles['preserveWhitespace'] ?? false) || ($inherited['preserveWhitespace'] ?? false),
         ];
     }
 

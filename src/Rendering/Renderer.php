@@ -13,6 +13,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Renderer
 {
+    protected const BLOCK_TAGS = [
+        'div', 'p', 'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+        'pre', 'table', 'thead', 'tbody', 'tr', 'hr', 'code',
+        'section', 'article', 'header', 'footer', 'nav', 'aside', 'main',
+    ];
+
     protected int $termWidth;
 
     protected ClassParser $classes;
@@ -64,6 +70,10 @@ class Renderer
         return $dom->getElementsByTagName('body')->item(0);
     }
 
+    // ======================================================================
+    // Children & Element Processing
+    // ======================================================================
+
     protected function processChildren(
         DOMNode $parent,
         array $inherited,
@@ -73,19 +83,31 @@ class Renderer
     ): array {
         $lines = [];
         $childIndex = 0;
+        $preserveWs = $inherited['preserveWhitespace'] ?? false;
 
         foreach ($parent->childNodes as $node) {
             if ($node instanceof DOMText) {
-                $text = $this->collapseWhitespace($this->cleanText($node->textContent));
-                if ($text !== '') {
-                    $text = Ansi::transformText($text, $inherited['textTransform'] ?? null);
+                $text = $this->cleanText($node->textContent);
 
-                    if ($spaceY > 0 && $childIndex > 0) {
-                        array_push($lines, ...array_fill(0, $spaceY, ''));
+                if ($preserveWs) {
+                    $textLines = explode("\n", $text);
+                    foreach ($textLines as $tl) {
+                        $tl = Ansi::transformText($tl, $inherited['textTransform'] ?? null);
+                        $lines[] = Ansi::wrapInherited($tl, $inherited);
                     }
-
-                    $lines[] = Ansi::wrapInherited($text, $inherited);
                     $childIndex++;
+                } else {
+                    $text = $this->collapseWhitespace($text);
+                    if ($text !== '') {
+                        $text = Ansi::transformText($text, $inherited['textTransform'] ?? null);
+
+                        if ($spaceY > 0 && $childIndex > 0) {
+                            array_push($lines, ...array_fill(0, $spaceY, ''));
+                        }
+
+                        $lines[] = Ansi::wrapInherited($text, $inherited);
+                        $childIndex++;
+                    }
                 }
             } elseif ($node instanceof DOMElement) {
                 $childLines = $this->processElement($node, $inherited, $availableWidth);
@@ -109,6 +131,27 @@ class Renderer
 
     protected function processElement(DOMElement $el, array $inherited, int $availableWidth): array
     {
+        $tag = strtolower($el->tagName);
+
+        // Self-closing tags
+        if ($tag === 'br') {
+            return [''];
+        }
+
+        if ($tag === 'hr') {
+            return $this->processHr($el, $inherited, $availableWidth);
+        }
+
+        // Table
+        if ($tag === 'table') {
+            return $this->processTable($el, $inherited, $availableWidth);
+        }
+
+        // Code block
+        if ($tag === 'code') {
+            return $this->processCodeBlock($el, $inherited, $availableWidth);
+        }
+
         $style = new ElementStyle($el, $inherited, $this->classes);
 
         if ($style->hidden) {
@@ -117,6 +160,8 @@ class Renderer
 
         if ($style->isFlexDiv()) {
             $lines = $style->wrapLines($this->processFlexRow($el, $style, $style->rowWidth($availableWidth)));
+        } elseif ($style->isDiv() && ! $style->preserveWhitespace && $this->hasOnlyInlineChildren($el)) {
+            $lines = $style->wrapLines([$this->renderInlineChildren($el, $style->merged)]);
         } elseif ($style->isDiv()) {
             $lines = $style->wrapLines(
                 $this->processChildren($el, $style->merged, $style->innerWidth($availableWidth), $style->spaceY, $style->listStyle)
@@ -132,6 +177,10 @@ class Renderer
         return $lines;
     }
 
+    // ======================================================================
+    // Flex Layout
+    // ======================================================================
+
     protected function processFlexRow(DOMElement $el, ElementStyle $style, int $rowWidth): array
     {
         $groups = [];
@@ -146,7 +195,7 @@ class Renderer
                 continue;
             }
             if ($node instanceof DOMElement) {
-                if (strtolower($node->tagName) === 'div') {
+                if ($this->isBlockTag($node)) {
                     if (! empty($currentInline)) {
                         $groups[] = ['type' => 'inline', 'nodes' => $currentInline];
                         $currentInline = [];
@@ -299,6 +348,10 @@ class Renderer
             default => ['before' => 0, 'between' => 0, 'after' => 0],
         };
     }
+
+    // ======================================================================
+    // Flex Measurement
+    // ======================================================================
 
     protected function measureChildren(array $children, array $inherited, int $spaceX): array
     {
@@ -459,9 +512,13 @@ class Renderer
         return Ansi::pad($content, $width, $style->align);
     }
 
+    // ======================================================================
+    // Inline Rendering
+    // ======================================================================
+
     protected function renderInline(DOMElement $el, ElementStyle $style): string
     {
-        return Ansi::wrap(
+        $content = Ansi::wrap(
             $this->renderInlineChildren($el, $style->merged),
             $style->textColor,
             $style->bgColor,
@@ -470,24 +527,290 @@ class Renderer
             $style->underline,
             $style->lineThrough,
         );
+
+        if ($style->tag === 'a' && $el->hasAttribute('href')) {
+            $content = Ansi::hyperlink($content, $el->getAttribute('href'));
+        }
+
+        return $content;
     }
 
     protected function renderInlineChildren(DOMElement $el, array $inherited): string
     {
+        $preserveWs = $inherited['preserveWhitespace'] ?? false;
         $parts = [];
+
         foreach ($el->childNodes as $node) {
             if ($node instanceof DOMText) {
-                $text = $this->collapseWhitespace($this->cleanText($node->textContent));
+                $text = $this->cleanText($node->textContent);
+                if (! $preserveWs) {
+                    $text = $this->normalizeWhitespace($text);
+                }
                 if ($text !== '') {
                     $text = Ansi::transformText($text, $inherited['textTransform'] ?? null);
                     $parts[] = Ansi::wrapInherited($text, $inherited);
                 }
             } elseif ($node instanceof DOMElement) {
-                $parts[] = $this->renderInline($node, new ElementStyle($node, $inherited, $this->classes));
+                if (strtolower($node->tagName) === 'br') {
+                    $parts[] = "\n";
+                } else {
+                    $parts[] = $this->renderInline($node, new ElementStyle($node, $inherited, $this->classes));
+                }
             }
         }
 
         return implode('', $parts);
+    }
+
+    // ======================================================================
+    // Horizontal Rule
+    // ======================================================================
+
+    protected function processHr(DOMElement $el, array $inherited, int $availableWidth): array
+    {
+        $style = new ElementStyle($el, $inherited, $this->classes);
+        $width = ($style->w ?? $availableWidth) - $style->ml - $style->mr;
+        $line = Ansi::repeatChar("\u{2500}", $width);
+
+        if ($style->textColor) {
+            $line = Ansi::wrap($line, $style->textColor, null, false);
+        } else {
+            $line = Ansi::wrap($line, Colors::rgb('gray', 500), null, false);
+        }
+
+        return $style->applyVerticalMargins([
+            str_repeat(' ', $style->ml).$line.str_repeat(' ', $style->mr),
+        ]);
+    }
+
+    // ======================================================================
+    // Code Block
+    // ======================================================================
+
+    protected function processCodeBlock(DOMElement $el, array $inherited, int $availableWidth): array
+    {
+        $style = new ElementStyle($el, $inherited, $this->classes);
+        $showLineNumbers = $el->hasAttribute('line');
+        $startLine = max(1, (int) ($el->getAttribute('start-line') ?: 1));
+
+        $text = $this->cleanText($el->textContent);
+        $codeLines = explode("\n", $text);
+
+        // Trim leading/trailing empty lines
+        while (! empty($codeLines) && trim($codeLines[0]) === '') {
+            array_shift($codeLines);
+        }
+        while (! empty($codeLines) && trim(end($codeLines)) === '') {
+            array_pop($codeLines);
+        }
+
+        if (empty($codeLines)) {
+            return [];
+        }
+
+        $lines = [];
+        $gutterWidth = $showLineNumbers
+            ? mb_strwidth((string) ($startLine + count($codeLines) - 1)) + 1
+            : 0;
+
+        foreach ($codeLines as $i => $codeLine) {
+            $prefix = '';
+            if ($showLineNumbers) {
+                $lineNum = $startLine + $i;
+                $numStr = str_pad((string) $lineNum, $gutterWidth - 1, ' ', STR_PAD_LEFT).' ';
+                $prefix = Ansi::wrap($numStr, Colors::rgb('stone', 500), null, false);
+            }
+            $lines[] = $prefix.Ansi::wrapInherited($codeLine, $style->merged);
+        }
+
+        return $style->wrapLines($lines);
+    }
+
+    // ======================================================================
+    // Table
+    // ======================================================================
+
+    protected function processTable(DOMElement $table, array $inherited, int $availableWidth): array
+    {
+        $style = new ElementStyle($table, $inherited, $this->classes);
+        $rows = $this->collectTableRows($table);
+
+        if (empty($rows)) {
+            return [];
+        }
+
+        // Pass 1: measure column widths
+        $colCount = max(array_map('count', $rows));
+        $colWidths = array_fill(0, $colCount, 0);
+
+        foreach ($rows as $row) {
+            foreach ($row as $colIndex => $cell) {
+                $content = $this->renderCellContent($cell['node'], $style->merged);
+                $width = Ansi::visibleLength($content);
+                $colWidths[$colIndex] = max($colWidths[$colIndex], $width);
+            }
+        }
+
+        // Check if columns fit within available width
+        $innerWidth = $availableWidth - $style->ml - $style->mr;
+        $padding = $colCount * 2;
+        $borders = $colCount + 1;
+        $totalNeeded = array_sum($colWidths) + $padding + $borders;
+
+        if ($totalNeeded > $innerWidth) {
+            $colWidths = $this->shrinkColumns($colWidths, max(0, $innerWidth - $padding - $borders));
+        }
+
+        // Pass 2: render
+        $borderColor = $style->textColor ?? Colors::rgb('stone', 600);
+        $lines = [];
+        $lines[] = $this->renderTableBorder($colWidths, 'top', $borderColor);
+        $headerDone = false;
+
+        foreach ($rows as $row) {
+            $isHeader = ($row[0]['type'] ?? '') === 'th';
+            $lines[] = $this->renderTableRow($row, $colWidths, $style, $borderColor);
+
+            if ($isHeader && ! $headerDone) {
+                $lines[] = $this->renderTableBorder($colWidths, 'mid', $borderColor);
+                $headerDone = true;
+            }
+        }
+
+        $lines[] = $this->renderTableBorder($colWidths, 'bottom', $borderColor);
+
+        return $style->wrapLines($lines);
+    }
+
+    protected function collectTableRows(DOMElement $table): array
+    {
+        $rows = [];
+
+        foreach ($table->childNodes as $child) {
+            if (! $child instanceof DOMElement) {
+                continue;
+            }
+
+            $childTag = strtolower($child->tagName);
+
+            if ($childTag === 'tr') {
+                $row = $this->collectCells($child);
+                if (! empty($row)) {
+                    $rows[] = $row;
+                }
+
+                continue;
+            }
+
+            if (in_array($childTag, ['thead', 'tbody', 'tfoot'], true)) {
+                foreach ($child->childNodes as $tr) {
+                    if (! $tr instanceof DOMElement || strtolower($tr->tagName) !== 'tr') {
+                        continue;
+                    }
+                    $row = $this->collectCells($tr);
+                    if (! empty($row)) {
+                        $rows[] = $row;
+                    }
+                }
+            }
+        }
+
+        return $rows;
+    }
+
+    protected function collectCells(DOMElement $tr): array
+    {
+        $cells = [];
+
+        foreach ($tr->childNodes as $cell) {
+            if (! $cell instanceof DOMElement) {
+                continue;
+            }
+            $cellTag = strtolower($cell->tagName);
+            if ($cellTag === 'th' || $cellTag === 'td') {
+                $cells[] = ['node' => $cell, 'type' => $cellTag];
+            }
+        }
+
+        return $cells;
+    }
+
+    protected function renderCellContent(DOMElement $cell, array $inherited): string
+    {
+        $style = new ElementStyle($cell, $inherited, $this->classes);
+
+        if ($this->hasChildElements($cell)) {
+            return $this->renderInlineChildren($cell, $style->merged);
+        }
+
+        $text = $this->collapseWhitespace($this->cleanText($cell->textContent));
+        $text = Ansi::transformText($text, $style->textTransform);
+
+        return Ansi::wrapInherited($text, $style->merged);
+    }
+
+    protected function renderTableRow(array $cells, array $colWidths, ElementStyle $tableStyle, array $borderColor): string
+    {
+        $border = Ansi::wrap("\u{2502}", $borderColor, null, false);
+        $parts = [$border];
+
+        foreach ($colWidths as $i => $width) {
+            $cell = $cells[$i] ?? null;
+            if ($cell) {
+                $content = $this->renderCellContent($cell['node'], $tableStyle->merged);
+                if (Ansi::visibleLength($content) > $width) {
+                    $content = Ansi::truncate($content, $width);
+                }
+                $content = Ansi::pad($content, $width);
+            } else {
+                $content = str_repeat(' ', $width);
+            }
+
+            $parts[] = ' '.$content.' ';
+            $parts[] = $border;
+        }
+
+        return implode('', $parts);
+    }
+
+    protected function renderTableBorder(array $colWidths, string $position, array $borderColor): string
+    {
+        [$left, $mid, $right, $fill] = match ($position) {
+            'top' => ["\u{256D}", "\u{252C}", "\u{256E}", "\u{2500}"],
+            'mid' => ["\u{251C}", "\u{253C}", "\u{2524}", "\u{2500}"],
+            'bottom' => ["\u{2570}", "\u{2534}", "\u{256F}", "\u{2500}"],
+        };
+
+        $segments = [];
+        foreach ($colWidths as $i => $width) {
+            if ($i > 0) {
+                $segments[] = $mid;
+            }
+            $segments[] = str_repeat($fill, $width + 2);
+        }
+
+        return Ansi::wrap($left.implode('', $segments).$right, $borderColor, null, false);
+    }
+
+    protected function shrinkColumns(array $colWidths, int $maxTotal): array
+    {
+        $total = array_sum($colWidths);
+        if ($total <= $maxTotal || $total === 0) {
+            return $colWidths;
+        }
+
+        $ratio = $maxTotal / $total;
+
+        return array_map(fn ($w) => max(1, (int) floor($w * $ratio)), $colWidths);
+    }
+
+    // ======================================================================
+    // Utilities
+    // ======================================================================
+
+    protected function isBlockTag(DOMElement $el): bool
+    {
+        return in_array(strtolower($el->tagName), static::BLOCK_TAGS, true);
     }
 
     protected function cleanText(string $text): string
@@ -498,6 +821,22 @@ class Renderer
     protected function collapseWhitespace(string $text): string
     {
         return trim(preg_replace('/[ \t\n\r]+/', ' ', $text));
+    }
+
+    protected function normalizeWhitespace(string $text): string
+    {
+        return preg_replace('/[ \t\n\r]+/', ' ', $text);
+    }
+
+    protected function hasOnlyInlineChildren(DOMElement $el): bool
+    {
+        foreach ($el->childNodes as $child) {
+            if ($child instanceof DOMElement && $this->isBlockTag($child)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function hasChildElements(DOMElement $el): bool
