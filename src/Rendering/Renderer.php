@@ -608,22 +608,77 @@ class Renderer
             return [];
         }
 
-        $lines = [];
+        $endLine = $startLine + count($codeLines) - 1;
+        $highlightLine = $showLineNumbers ? (int) $el->getAttribute('line') : null;
+        $hasHighlight = $highlightLine !== null
+            && $highlightLine >= $startLine
+            && $highlightLine <= $endLine;
+
         $gutterWidth = $showLineNumbers
-            ? mb_strwidth((string) ($startLine + count($codeLines) - 1)) + 1
+            ? mb_strwidth((string) $endLine)
             : 0;
+
+        $arrowColor = Colors::rgb('rose', 500);
+        $codeColor = $style->textColor ?? Colors::rgb('violet', 300);
+        $bgColor = $style->bgColor;
+        $divider = Ansi::wrap("\u{2502}", Colors::rgb('stone', 700), null, false);
+        $contentWidth = $availableWidth - $style->ml - $style->mr;
+
+        $lines = [];
 
         foreach ($codeLines as $i => $codeLine) {
             $prefix = '';
             if ($showLineNumbers) {
                 $lineNum = $startLine + $i;
-                $numStr = str_pad((string) $lineNum, $gutterWidth - 1, ' ', STR_PAD_LEFT).' ';
-                $prefix = Ansi::wrap($numStr, Colors::rgb('stone', 500), null, false);
+                $numStr = str_pad((string) $lineNum, $gutterWidth, ' ', STR_PAD_LEFT);
+                $dimNum = Ansi::wrap($numStr, Colors::rgb('zinc', 500), null, false);
+
+                if ($hasHighlight && $lineNum === $highlightLine) {
+                    $prefix = Ansi::wrap("\u{2192}", $arrowColor, null, false).' '.$numStr.' '.$divider.' ';
+                } elseif ($hasHighlight) {
+                    $prefix = '  '.$dimNum.' '.$divider.' ';
+                } else {
+                    $prefix = $dimNum.' '.$divider.' ';
+                }
             }
-            $lines[] = $prefix.Ansi::wrapInherited($codeLine, $style->merged);
+            $lines[] = $prefix.Ansi::wrap($codeLine, $codeColor, null, false);
         }
 
-        return $style->wrapLines($lines);
+        // Apply bg-color: pad each line to fill contentWidth
+        if ($bgColor) {
+            $bgPrefix = Colors::bgFromRgb($bgColor);
+            $lines = array_map(function ($line) use ($bgPrefix, $contentWidth) {
+                $pad = max(0, $contentWidth - Ansi::visibleLength($line));
+
+                return $bgPrefix.$line.str_repeat(' ', $pad).Ansi::reset();
+            }, $lines);
+
+            // Add bg-colored padding lines only if explicitly set
+            if ($style->pt) {
+                $bgBlank = $bgPrefix.str_repeat(' ', $contentWidth).Ansi::reset();
+                array_unshift($lines, ...array_fill(0, $style->pt, $bgBlank));
+            }
+            if ($style->pb) {
+                $bgBlank ??= $bgPrefix.str_repeat(' ', $contentWidth).Ansi::reset();
+                array_push($lines, ...array_fill(0, $style->pb, $bgBlank));
+            }
+        } else {
+            if ($style->pt) {
+                array_unshift($lines, ...array_fill(0, $style->pt, ''));
+            }
+            if ($style->pb) {
+                array_push($lines, ...array_fill(0, $style->pb, ''));
+            }
+        }
+
+        // Horizontal margins
+        if ($style->ml || $style->mr) {
+            $left = str_repeat(' ', $style->ml);
+            $right = str_repeat(' ', $style->mr);
+            $lines = array_map(fn ($l) => $left.$l.$right, $lines);
+        }
+
+        return $style->applyVerticalMargins($lines);
     }
 
     // ======================================================================
