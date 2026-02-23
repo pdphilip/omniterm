@@ -25,30 +25,35 @@ class DebugFormatter
         return self::flatten($data, 0);
     }
 
-    private static function flatten(array $data, int $depth): array
+    private static function flatten(array $data, int $depth, array $ancestors = []): array
     {
+        $keys = array_keys($data);
+        $lastKey = end($keys);
         $rows = [];
+
         foreach ($data as $key => $value) {
+            $isLast = ($key === $lastKey);
+
             if (is_array($value) || is_object($value)) {
                 $nested = is_object($value) ? self::toArray($value) : $value;
                 if (empty($nested)) {
-                    $rows[] = self::row(self::formatKey($key), '[]', 'empty', $depth);
+                    $rows[] = self::row(self::formatKey($key), '[]', 'empty', $depth, $isLast, $ancestors);
                 } else {
-                    $rows[] = ['type' => 'section', 'key' => self::formatKey($key), 'depth' => $depth];
-                    array_push($rows, ...self::flatten($nested, $depth + 1));
-                    $rows[] = ['type' => 'end', 'depth' => $depth];
+                    $rows[] = ['type' => 'section', 'key' => self::formatKey($key), 'depth' => $depth, 'last' => $isLast, 'ancestors' => $ancestors];
+                    $childAncestors = $depth > 0 ? [...$ancestors, ! $isLast] : $ancestors;
+                    array_push($rows, ...self::flatten($nested, $depth + 1, $childAncestors));
                 }
 
                 continue;
             }
 
-            $rows[] = self::row(self::formatKey($key), $value, self::typeOf($value), $depth);
+            $rows[] = self::row(self::formatKey($key), $value, self::typeOf($value), $depth, $isLast, $ancestors);
         }
 
         return $rows;
     }
 
-    private static function row(?string $key, mixed $value, string $valueType, int $depth): array
+    private static function row(?string $key, mixed $value, string $valueType, int $depth, bool $last = false, array $ancestors = []): array
     {
         return [
             'type' => 'row',
@@ -56,6 +61,8 @@ class DebugFormatter
             'value' => $value,
             'valueType' => $valueType,
             'depth' => $depth,
+            'last' => $last,
+            'ancestors' => $ancestors,
         ];
     }
 

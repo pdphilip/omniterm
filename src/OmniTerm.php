@@ -258,16 +258,23 @@ class OmniTerm
     }
 
     // ----------------------------------------------------------------------
-    // Debug
+    // Data List & Debug
     // ----------------------------------------------------------------------
+
+    public function dataList(mixed $data, string $title = 'Data', string $borderColor = 'text-purple-400'): void
+    {
+        $rows = DebugFormatter::format($data);
+        $this->outputHtml($this->renderView('omniterm::debug.data-list', [
+            'title' => $title,
+            'borderColor' => $borderColor,
+            'rows' => $rows,
+        ]));
+    }
 
     public function debug(mixed $var, string $label = ''): void
     {
-        $rows = DebugFormatter::format($var);
-        $this->outputHtml($this->renderView('omniterm::debug.debug', [
-            'label' => $label,
-            'rows' => $rows,
-        ]));
+        $this->dataList($var, $label ?: 'Debug');
+        exit(1);
     }
 
     // ----------------------------------------------------------------------
