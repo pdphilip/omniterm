@@ -2,6 +2,22 @@
 
 All notable changes to `pdphilip/omniterm` will be documented in this file.
 
+## v2.1.1 - 2026-03-08
+
+### Added
+
+- `ask()` now accepts a `$default` parameter — when provided, pressing Enter returns the default value instead of an empty string
+- Question prompt displays `(default: X)` hint in muted text when a default is set
+- `AskTest` with 7 tests covering question view rendering (options, defaults, prompt character)
+- Service provider registered in test suite `TestCase` for view-dependent tests
+
+### Changed
+
+- `ask()` signature: `ask(string $question, array $options = [], mixed $default = null): mixed`
+- Question blade view renders the default hint alongside options
+
+**Full Changelog**: https://github.com/pdphilip/omniterm/compare/v2.1.0...v2.1.1
+
 ## v2.1.0 - 2026-02-23
 
 ### Added

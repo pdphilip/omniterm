@@ -281,12 +281,12 @@ class OmniTerm
     // ASK
     // ----------------------------------------------------------------------
 
-    public function ask(string $question, array $options = []): mixed
+    public function ask(string $question, array $options = [], mixed $default = null): mixed
     {
-        $html = $this->renderView('omniterm::elements.question', ['question' => $question, 'options' => $options]);
+        $html = $this->renderView('omniterm::elements.question', ['question' => $question, 'options' => $options, 'default' => $default]);
         (new Renderer)->render($html);
 
-        $q = new Question('');
+        $q = new Question('', $default);
         if (! empty($options)) {
             $q->setAutocompleterValues($options);
         }
