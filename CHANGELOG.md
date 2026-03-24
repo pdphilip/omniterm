@@ -2,6 +2,29 @@
 
 All notable changes to `pdphilip/omniterm` will be documented in this file.
 
+## v3.0.0 - 2026-03-24
+
+### Breaking Changes
+
+- **Dropped Laravel 10 support** — minimum is now Laravel 11
+- **Dropped Symfony 6 support** — minimum is now Symfony 7
+
+### Added
+
+- **Laravel 13 support** — compatible with Laravel 11, 12, and 13
+- **Symfony 8 support** — for Laravel 13's Symfony dependency
+- Composer test scripts for per-version testing: `composer test:l11`, `composer test:l12`, `composer test:l13`, `composer test:all`
+
+### Changed
+
+- `illuminate/contracts` constraint: `^11.0||^12.0||^13.0`
+- `symfony/console` constraint: `^7.0||^8.0`
+- `laravel/prompts` constraint: `^0.2||^0.3`
+- Dev dependencies updated to support Pest 4, PHPStan 2, Larastan 3, Testbench 11
+- CI matrix updated: PHP 8.3/8.4, Laravel 11/12/13
+
+**Full Changelog**: https://github.com/pdphilip/omniterm/compare/v2.1.1...v3.0.0
+
 ## v2.1.1 - 2026-03-08
 
 ### Added
