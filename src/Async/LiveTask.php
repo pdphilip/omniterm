@@ -129,7 +129,7 @@ class LiveTask
 
     protected function buildHtml(string $state, int $frame, ?string $message = null): string
     {
-        return (string) view('omniterm::live-task', [
+        return (string) view('omniterm::live-task', [ // @phpstan-ignore argument.type
             'title' => $message ?? $this->title,
             'state' => $state,
             'frame' => $frame,

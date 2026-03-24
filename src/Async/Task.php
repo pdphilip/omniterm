@@ -39,7 +39,7 @@ final class Task
         return $this;
     }
 
-    public function execute(): string|bool
+    public function execute(): string
     {
         $output = ($this->callable)();
 

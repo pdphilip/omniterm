@@ -151,11 +151,7 @@ final class AsyncHtmlRenderer
 
     private function executeInChildTask(Task $task, Connection $connectionToParent): void
     {
-        $output = $task->execute();
-        if (is_bool($output)) {
-            $output = (string) $output;
-        }
-        $connectionToParent->write($output);
+        $connectionToParent->write($task->execute());
         $connectionToParent->close();
     }
 }

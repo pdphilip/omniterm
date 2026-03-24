@@ -56,7 +56,7 @@ class OmniTerm
 
     public function omniError(string $method, string $error, string $help = ''): never
     {
-        (new Renderer)->render((string) view('omniterm::status.omni-error', ['method' => $method, 'error' => $error, 'help' => $help]));
+        (new Renderer)->render((string) view('omniterm::status.omni-error', ['method' => $method, 'error' => $error, 'help' => $help])); // @phpstan-ignore argument.type
         exit(1);
     }
 

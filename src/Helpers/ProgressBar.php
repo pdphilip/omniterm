@@ -111,7 +111,7 @@ class ProgressBar
 
         $view = $this->isFramed ? 'omniterm::progress.framed' : 'omniterm::progress.simple';
 
-        return (string) view($view, [
+        return (string) view($view, [ // @phpstan-ignore argument.type
             'barBg' => $colors['barBg'],
             'barFg' => $colors['barFg'],
             'labelFg' => $colors['labelFg'],

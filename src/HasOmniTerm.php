@@ -5,6 +5,7 @@ namespace OmniTerm;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/** @phpstan-ignore trait.unused */
 trait HasOmniTerm
 {
     public OmniTerm $omni;
