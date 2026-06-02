@@ -11,13 +11,14 @@ class ConfirmTask
 {
     public function __construct(
         protected string $question,
-        protected Closure $callback,
+        protected ?Closure $callback,
         protected OmniTerm $omni,
         protected string $confirmColor = 'emerald',
         protected string $declineColor = 'rose',
+        protected bool $default = true,
     ) {}
 
-    public function run(): mixed
+    public function run(): bool
     {
         $renderer = $this->omni->liveView('omniterm::confirm', $this->viewData('asking'));
 
@@ -30,13 +31,16 @@ class ConfirmTask
         }
 
         $renderer->reRenderView('omniterm::confirm', $this->viewData('confirmed'));
-        $this->omni->newLine();
-        $result = ($this->callback)();
+
+        if ($this->callback !== null) {
+            $this->omni->newLine();
+            ($this->callback)();
+        }
 
         $this->omni->hr("text-{$this->confirmColor}-500");
         $this->omni->endLiveView();
 
-        return $result ?? true;
+        return true;
     }
 
     // ------------------------------------------------------------------
@@ -73,8 +77,16 @@ class ConfirmTask
                 return true;
             }
 
-            if ($lower === 'n' || $char === "\e") {
+            if ($lower === 'n') {
                 return false;
+            }
+
+            if ($char === "\e") {
+                return false;
+            }
+
+            if ($char === "\n" || $char === "\r") {
+                return $this->default;
             }
         }
     }
@@ -83,7 +95,11 @@ class ConfirmTask
     {
         $line = trim(fgets(STDIN) ?: '');
 
-        return in_array(strtolower($line), ['y', 'yes']);
+        if ($line === '') {
+            return $this->default;
+        }
+
+        return in_array(strtolower($line), ['y', 'yes'], true);
     }
 
     // ------------------------------------------------------------------
@@ -124,6 +140,7 @@ class ConfirmTask
             'state' => $state,
             'confirmColor' => $this->confirmColor,
             'declineColor' => $this->declineColor,
+            'default' => $this->default,
         ];
     }
 }

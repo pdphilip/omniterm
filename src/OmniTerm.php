@@ -13,13 +13,17 @@ use OmniTerm\Async\SplitBrowser;
 use OmniTerm\Async\TaskResult;
 use OmniTerm\Helpers\DebugFormatter;
 use OmniTerm\Helpers\ProgressBar;
+use OmniTerm\Prompts\PromptTheme;
+use OmniTerm\Prompts\Validation;
 use OmniTerm\Rendering\Renderer;
 use OmniTerm\Rendering\Terminal;
-use Symfony\Component\Console\Helper\QuestionHelper;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
+
+use function Laravel\Prompts\multiselect;
+use function Laravel\Prompts\password;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\suggest;
+use function Laravel\Prompts\text;
 
 class OmniTerm
 {
@@ -281,17 +285,156 @@ class OmniTerm
     // ASK
     // ----------------------------------------------------------------------
 
-    public function ask(string $question, array $options = [], mixed $default = null): mixed
-    {
-        $html = $this->renderView('omniterm::elements.question', ['question' => $question, 'options' => $options, 'default' => $default]);
-        (new Renderer)->render($html);
+    /**
+     * Ask for a line of text.
+     *
+     * Passing $options turns on autocomplete (the values are suggestions, not a
+     * constraint - use select() for a constrained choice). $validate accepts a
+     * keyword (email, url, int), a regex, an `in:a,b,c` list, or a callable
+     * returning an error string; invalid input re-prompts with the error shown.
+     *
+     * @param  array<int, int|string>  $options
+     */
+    public function ask(
+        string $question,
+        array $options = [],
+        mixed $default = null,
+        bool $required = false,
+        string|callable|null $validate = null,
+        ?string $placeholder = null,
+        ?string $hint = null,
+    ): mixed {
+        $validator = Validation::resolve($validate);
+        $default = $default === null ? '' : (string) $default;
+        $placeholder ??= '';
+        $hint ??= '';
 
-        $q = new Question('', $default);
-        if (! empty($options)) {
-            $q->setAutocompleterValues($options);
+        return PromptTheme::run(function () use ($question, $options, $default, $required, $validator, $placeholder, $hint) {
+            if ($options !== []) {
+                return suggest(
+                    label: $question,
+                    options: array_map(static fn ($o) => (string) $o, array_values($options)),
+                    placeholder: $placeholder,
+                    default: $default,
+                    required: $required,
+                    validate: $validator,
+                    hint: $hint,
+                );
+            }
+
+            return text(
+                label: $question,
+                placeholder: $placeholder,
+                default: $default,
+                required: $required,
+                validate: $validator,
+                hint: $hint,
+            );
+        });
+    }
+
+    /**
+     * Ask the user to choose one option. Returns the chosen key (or value, for
+     * a list of options) already validated against the allowed set. A single
+     * choice is always required, so there is no "none" - use confirm() or a
+     * multiselect() if optionality matters.
+     *
+     * @param  array<int|string, string>  $options
+     */
+    public function select(
+        string $label,
+        array $options,
+        int|string|null $default = null,
+        ?string $hint = null,
+        int $scroll = 10,
+    ): int|string {
+        return PromptTheme::run(fn () => select(
+            label: $label,
+            options: $options,
+            default: $default,
+            scroll: $scroll,
+            hint: $hint ?? '',
+        ));
+    }
+
+    /**
+     * Ask the user to toggle multiple options.
+     *
+     * Plain options (a list or a key => label map) return the list of selected
+     * keys. The richer spec form - key => ['label' => ..., 'default' => bool] -
+     * returns a key => bool map covering every option, so callers can read each
+     * toggle directly.
+     *
+     * @param  array<int|string, mixed>  $options
+     * @param  array<int, int|string>  $default
+     * @return array<int|string, mixed>
+     */
+    public function multiselect(
+        string $label,
+        array $options,
+        array $default = [],
+        ?string $hint = null,
+        bool $required = false,
+        int $scroll = 10,
+    ): array {
+        $first = $options === [] ? null : $options[array_key_first($options)];
+
+        if (! is_array($first)) {
+            return PromptTheme::run(fn () => multiselect(
+                label: $label,
+                options: $options,
+                default: $default,
+                scroll: $scroll,
+                hint: $hint ?? '',
+                required: $required,
+            ));
         }
 
-        return (new QuestionHelper)->ask(new ArrayInput([]), new ConsoleOutput, $q);
+        $labels = [];
+        $defaults = $default;
+        foreach ($options as $key => $spec) {
+            $labels[$key] = $spec['label'] ?? (string) $key;
+            if ($default === [] && ! empty($spec['default'])) {
+                $defaults[] = $key;
+            }
+        }
+
+        $selected = PromptTheme::run(fn () => multiselect(
+            label: $label,
+            options: $labels,
+            default: $defaults,
+            scroll: $scroll,
+            hint: $hint ?? '',
+            required: $required,
+        ));
+
+        $result = [];
+        foreach (array_keys($options) as $key) {
+            $result[$key] = in_array($key, $selected, true);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Ask for a secret. Input is masked and never echoed.
+     */
+    public function password(
+        string $label,
+        bool $required = false,
+        string|callable|null $validate = null,
+        ?string $placeholder = null,
+        ?string $hint = null,
+    ): string {
+        $validator = Validation::resolve($validate);
+
+        return PromptTheme::run(fn () => password(
+            label: $label,
+            placeholder: $placeholder ?? '',
+            required: $required,
+            validate: $validator,
+            hint: $hint ?? '',
+        ));
     }
 
     // ----------------------------------------------------------------------
@@ -307,9 +450,27 @@ class OmniTerm
     // Confirm
     // ----------------------------------------------------------------------
 
-    public function confirm(string $question, callable $callback, string $confirmColor = 'emerald', string $declineColor = 'rose'): mixed
-    {
-        return (new ConfirmTask($question, $callback(...), $this, $confirmColor, $declineColor))->run();
+    /**
+     * Ask a yes/no question and return whether it was confirmed.
+     *
+     * Pass a $callback to run it on confirmation (the legacy signature); omit it
+     * and just read the boolean: `if ($omni->confirm('Apply?')) { ... }`.
+     */
+    public function confirm(
+        string $question,
+        ?callable $callback = null,
+        bool $default = true,
+        string $confirmColor = 'emerald',
+        string $declineColor = 'rose',
+    ): bool {
+        return (new ConfirmTask(
+            $question,
+            $callback === null ? null : $callback(...),
+            $this,
+            $confirmColor,
+            $declineColor,
+            $default,
+        ))->run();
     }
 
     // ----------------------------------------------------------------------
@@ -324,6 +485,29 @@ class OmniTerm
     public function task(string $title, callable $callback, Spinner $spinner = Spinner::Sand, ?array $colors = null): TaskResult|false
     {
         return $this->liveTask($title, $spinner, $colors)->runTask($callback);
+    }
+
+    /**
+     * Run a callback inside a titled section while letting its stdout flow
+     * straight through - for tools whose own output (npm, git, composer) is more
+     * useful than a spinner. Wraps the section in a divider and a status row.
+     *
+     * Treats an integer return of 0 (or null/true) as success, anything else as
+     * failure, mirroring shell exit codes from passthru().
+     */
+    public function passthrough(string $title, callable $callback): mixed
+    {
+        $this->divider($title);
+
+        $result = $callback();
+
+        $failed = (is_int($result) && $result !== 0) || $result === false;
+
+        $failed
+            ? $this->tableRowFailed($title)
+            : $this->tableRowOk($title);
+
+        return $result;
     }
 
     // ----------------------------------------------------------------------

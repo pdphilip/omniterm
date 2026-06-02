@@ -20,7 +20,7 @@ class LiveTaskDemoCommand extends Command
         $this->omni->newLine();
 
         // -----------------------------------------------------------------
-        // Simple task() — one-liner, no rows
+        // Simple task() - one-liner, no rows
         // -----------------------------------------------------------------
         $this->omni->info('Simple one-shot task:');
         $this->omni->newLine();
@@ -50,7 +50,7 @@ class LiveTaskDemoCommand extends Command
         $this->omni->newLine();
 
         // -----------------------------------------------------------------
-        // liveTask() — with feedback rows, simulating a bulk operation
+        // liveTask() - with feedback rows, simulating a bulk operation
         // -----------------------------------------------------------------
         $this->omni->info('Live task with feedback rows:');
         $this->omni->newLine();

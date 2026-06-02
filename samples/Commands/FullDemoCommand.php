@@ -21,7 +21,7 @@ class FullDemoCommand extends Command
         $this->omni->newLine();
 
         // ── Inline HTML ────────────────────────────────────────────────────
-        $this->omni->render('<div class="px-2"><span class="text-sky-400 font-bold">render()</span> <span class="text-gray-400">— raw HTML to ANSI</span></div>');
+        $this->omni->render('<div class="px-2"><span class="text-sky-400 font-bold">render()</span> <span class="text-gray-400">- raw HTML to ANSI</span></div>');
 
         $parsed = $this->omni->parse('<span class="text-emerald-400">parse()</span> returns a string');
         $this->omni->render('<div class="px-2"><span>'.$parsed.'</span></div>');

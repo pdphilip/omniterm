@@ -1,6 +1,7 @@
 <?php
+$default = $default ?? true;
 $borderColor = 'text-gray';
-$answer = 'y/n';
+$answer = $default ? 'Y/n' : 'y/N';
 $answerColor = 'text-gray';
 
 switch ($state) {

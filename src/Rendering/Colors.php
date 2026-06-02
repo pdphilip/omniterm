@@ -45,7 +45,7 @@ class Colors
             return static::$colorMode = self::MODE_TRUECOLOR;
         }
 
-        // Safe default — 256 works everywhere
+        // Safe default - 256 works everywhere
         return static::$colorMode = self::MODE_256;
     }
 

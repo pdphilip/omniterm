@@ -6,13 +6,13 @@ All notable changes to `pdphilip/omniterm` will be documented in this file.
 
 ### Breaking Changes
 
-- **Dropped Laravel 10 support** — minimum is now Laravel 11
-- **Dropped Symfony 6 support** — minimum is now Symfony 7
+- **Dropped Laravel 10 support** - minimum is now Laravel 11
+- **Dropped Symfony 6 support** - minimum is now Symfony 7
 
 ### Added
 
-- **Laravel 13 support** — compatible with Laravel 11, 12, and 13
-- **Symfony 8 support** — for Laravel 13's Symfony dependency
+- **Laravel 13 support** - compatible with Laravel 11, 12, and 13
+- **Symfony 8 support** - for Laravel 13's Symfony dependency
 - Composer test scripts for per-version testing: `composer test:l11`, `composer test:l12`, `composer test:l13`, `composer test:all`
 
 ### Changed
@@ -29,7 +29,7 @@ All notable changes to `pdphilip/omniterm` will be documented in this file.
 
 ### Added
 
-- `ask()` now accepts a `$default` parameter — when provided, pressing Enter returns the default value instead of an empty string
+- `ask()` now accepts a `$default` parameter - when provided, pressing Enter returns the default value instead of an empty string
 - Question prompt displays `(default: X)` hint in muted text when a default is set
 - `AskTest` with 7 tests covering question view rendering (options, defaults, prompt character)
 - Service provider registered in test suite `TestCase` for view-dependent tests
@@ -148,7 +148,7 @@ The rendering engine now handles semantic HTML tags with correct terminal output
   }
   ```
 
-- **Core class renamed:** `OmniTerm\Helpers\OmniHelpers` → `OmniTerm\OmniTerm` — the flagship class name now belongs to the core component, accessed via `$this->omni`
+- **Core class renamed:** `OmniTerm\Helpers\OmniHelpers` → `OmniTerm\OmniTerm` - the flagship class name now belongs to the core component, accessed via `$this->omni`
 
 - **Spinner enum replaces strings:** Loader/spinner types are now a backed enum instead of magic strings
   ```php
@@ -191,17 +191,17 @@ The rendering engine now handles semantic HTML tags with correct terminal output
   ]);
   ```
 
-- **Global functions removed:** `render()`, `liveRender()`, `parse()`, `terminal()`, `asyncFunction()` — use `$this->omni->` methods instead
+- **Global functions removed:** `render()`, `liveRender()`, `parse()`, `terminal()`, `asyncFunction()` - use `$this->omni->` methods instead
 
 ### Added
 
-- `Spinner` backed enum (`OmniTerm\Async\Spinner`) with 10 animation types — resolves view names, animation frames, and labels via `view()`, `frames()`, `label()` methods
+- `Spinner` backed enum (`OmniTerm\Async\Spinner`) with 10 animation types - resolves view names, animation frames, and labels via `view()`, `frames()`, `label()` methods
 - `TaskResult` value object for structured spinner/live task results
 - `SpinnerTask` class encapsulating spinner + async task execution
-- `LiveTask::runTask()` — one-shot method combining run + finish
-- `OmniTerm::task()` — one-liner for spinner task execution
+- `LiveTask::runTask()` - one-shot method combining run + finish
+- `OmniTerm::task()` - one-liner for spinner task execution
 - Progress bar builder with `framed()`, `steps()`, `gradient()`, `color()` chainable methods
-- SplitBrowser closure rendering — detail pane captures full omni output (status blocks, tables, etc.) via `Renderer::renderUsing()` with `COLUMNS` width constraint
+- SplitBrowser closure rendering - detail pane captures full omni output (status blocks, tables, etc.) via `Renderer::renderUsing()` with `COLUMNS` width constraint
 - SplitBrowser associative array auto-formatting (bold keys, aligned values)
 - ANSI-aware string truncation in SplitBrowser renderer preventing layout overflow
 - New sample commands: `omniterm:browser-demo`, `omniterm:live-task-demo`, `omniterm:title-bars`
