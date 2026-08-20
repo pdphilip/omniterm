@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
         php: [ 8.3, 8.4 ]
@@ -45,6 +45,14 @@ jobs:
         run: |
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Allow Laravel 11 to resolve
+        if: matrix.laravel == '11.*'
+        # Laravel 11 is past its security window, so three advisories now cover
+        # the whole branch with no 11.x release that clears them. Composer 2.9+
+        # blocks advisory-affected versions during resolution, which makes the
+        # row unrunnable rather than red. Report them instead of blocking.
+        run: composer config --global policy.advisories.block false
 
       - name: Install dependencies
         run: |
